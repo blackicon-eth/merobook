@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Heart, DollarSign, Trash2, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card } from '../shadcn-ui/card';
 import { Button } from '../shadcn-ui/button';
 import { Post } from '@/api/AbiClient';
@@ -93,20 +94,28 @@ export function PostCard({ post, getPosts }: PostCardProps) {
     <Card className="p-6 bg-card/50 backdrop-blur border-border glow-border">
       <div className="flex gap-4">
         {/* Avatar */}
-        <div className="size-12 rounded-full overflow-hidden bg-secondary border border-primary shrink-0">
+        <Link
+          to={isOwnPost ? '/profile' : `/user/${post.author_id}`}
+          className="size-12 rounded-full overflow-hidden bg-secondary border border-primary shrink-0 hover:border-primary/70 transition-colors"
+        >
           <img
             src={post.author_avatar || '/placeholder.svg'}
             alt={post.author_name}
             className="w-full h-full object-cover"
           />
-        </div>
+        </Link>
 
         {/* Content */}
         <div className="flex-1 space-y-3">
           <div>
-            <h3 className="font-semibold text-lg text-foreground">
-              {post.author_name}
-            </h3>
+            <Link
+              to={isOwnPost ? '/profile' : `/user/${post.author_id}`}
+              className="hover:text-primary transition-colors"
+            >
+              <h3 className="font-semibold text-lg text-foreground hover:underline">
+                {post.author_name}
+              </h3>
+            </Link>
             <p className="text-sm text-muted-foreground">
               {formatTimestamp(post.timestamp)}
             </p>

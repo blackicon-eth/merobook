@@ -7,6 +7,7 @@ import Authenticate from './pages/login/Authenticate';
 import RegisterPage from './pages/register';
 import { Navbar } from './components/custom-ui/navbar';
 import ProfilePage from './pages/profile/index';
+import UserProfilePage from './pages/user/index';
 import { Toaster } from 'sonner';
 import { GeneralContextProvider } from './contexts/general-context';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -39,6 +40,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/:userId"
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
               </ProtectedRoute>
             }
           />
