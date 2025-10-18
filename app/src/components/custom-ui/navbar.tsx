@@ -5,15 +5,27 @@ import { motion } from 'motion/react';
 import { useCalimero } from '@calimero-network/calimero-client';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../shadcn-ui/button';
-import { cn } from '@/lib/utils';
+import { cn, formatWalletAddress } from '@/lib/utils';
 import { useGeneralContext } from '@/contexts/general-context';
 import { UserCircle, Home, User } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../shadcn-ui/dropdown-menu';
+import { ConnectButton, useAccountModal } from '@rainbow-me/rainbowkit';
+import { useAccount } from 'wagmi';
 
 export function Navbar() {
   const navigate = useNavigate();
   const { logout } = useCalimero();
   const location = useLocation();
   const { currentUser, isLoadingUser } = useGeneralContext();
+  const { address: connectedAddress } = useAccount();
+  const { openAccountModal } = useAccountModal();
 
   // Handles the logout of the user
   const doLogout = useCallback(() => {
@@ -77,35 +89,62 @@ export function Navbar() {
           </div>
 
           {/* User Info & Logout */}
-          <div className="flex justify-end items-center gap-3 w-[353px]">
-            {isLoadingUser ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="size-6 rounded-full bg-muted animate-pulse" />
-                Loading...
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center justify-center gap-3 cursor-pointer">
+              <div className="flex justify-end items-center gap-3 w-[353px]">
+                {isLoadingUser ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="size-6 rounded-full bg-muted animate-pulse" />
+                    Loading...
+                  </div>
+                ) : currentUser ? (
+                  <div className="flex items-center gap-3">
+                    <div className="size-10 rounded-full overflow-hidden bg-secondary border border-primary shrink-0">
+                      <img
+                        src={currentUser.avatar}
+                        alt={currentUser.name}
+                        className="size-10 object-cover"
+                      />
+                    </div>
+                    <span className="text-lg font-medium text-foreground hidden lg:inline">
+                      {currentUser.name}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <UserCircle className="size-6" />
+                    <span className="hidden lg:inline">Not registered</span>
+                  </div>
+                )}
               </div>
-            ) : currentUser ? (
-              <div className="flex items-center gap-2">
-                <div className="size-8 rounded-full overflow-hidden bg-secondary border border-primary shrink-0">
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="text-sm font-medium text-foreground hidden lg:inline">
-                  {currentUser.name}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <UserCircle className="size-6" />
-                <span className="hidden lg:inline">Not registered</span>
-              </div>
-            )}
-            <Button onClick={doLogout} size="sm">
-              Logout
-            </Button>
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[353px] mt-1">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex justify-center w-full">
+                {connectedAddress ? (
+                  <Button
+                    onClick={openAccountModal}
+                    className="flex items-center gap-2 cursor-pointer w-full"
+                  >
+                    <span className="text-sm font-medium text-black">
+                      {formatWalletAddress(connectedAddress)}
+                    </span>
+                  </Button>
+                ) : (
+                  <ConnectButton label="Connect Ethereum Wallet" />
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex justify-center w-full">
+                <Button
+                  onClick={doLogout}
+                  className="bg-red-500 text-sm text-primary hover:bg-red-500/90 glow-border w-full"
+                >
+                  Logout
+                </Button>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </motion.nav>

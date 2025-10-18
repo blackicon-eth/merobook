@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '@calimero-network/mero-ui/styles.css';
-import './index.css';
+import './globals.css';
 import App from './App';
 
 const root = ReactDOM.createRoot(

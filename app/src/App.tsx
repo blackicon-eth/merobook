@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, BrowserRouter, useLocation } from 'react-router-dom';
 import { CalimeroProvider, AppMode } from '@calimero-network/calimero-client';
-
 import HomePage from './pages/home';
 import Authenticate from './pages/login/Authenticate';
 import RegisterPage from './pages/register';
@@ -11,6 +10,7 @@ import UserProfilePage from './pages/user/index';
 import { Toaster } from 'sonner';
 import { GeneralContextProvider } from './contexts/general-context';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { ConnectorContext } from './contexts/connector-context';
 
 function AppContent() {
   const location = useLocation();
@@ -63,16 +63,18 @@ export default function App() {
   );
 
   return (
-    <CalimeroProvider
-      clientApplicationId={clientAppId}
-      applicationPath={window.location.pathname || '/'}
-      mode={AppMode.MultiContext}
-    >
-      <GeneralContextProvider>
-        <BrowserRouter basename="/">
-          <AppContent />
-        </BrowserRouter>
-      </GeneralContextProvider>
-    </CalimeroProvider>
+    <ConnectorContext>
+      <CalimeroProvider
+        clientApplicationId={clientAppId}
+        applicationPath={window.location.pathname || '/'}
+        mode={AppMode.MultiContext}
+      >
+        <GeneralContextProvider>
+          <BrowserRouter basename="/">
+            <AppContent />
+          </BrowserRouter>
+        </GeneralContextProvider>
+      </CalimeroProvider>
+    </ConnectorContext>
   );
 }
