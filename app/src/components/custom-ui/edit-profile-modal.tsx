@@ -66,6 +66,17 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
     }
   }, [api, currentUser, name, bio, walletAddress, refreshUser]);
 
+  // Handle Enter key for input fields
+  const handleInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        updateProfile();
+      }
+    },
+    [updateProfile],
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -106,6 +117,7 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={handleInputKeyDown}
               placeholder="Your name"
               className="w-full px-4 py-2 rounded-md border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-[oklch(0.75_0.15_166)]/50 focus:ring-[oklch(0.75_0.15_166)]/20 focus:outline-none"
               maxLength={50}
@@ -121,12 +133,13 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
             <Textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
+              onKeyDown={handleInputKeyDown}
               placeholder="Tell us about yourself"
               className="min-h-[120px] resize-none border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-[oklch(0.75_0.15_166)]/50 focus:ring-[oklch(0.75_0.15_166)]/20"
               maxLength={200}
             />
             <p className="text-xs text-white/40 text-right">
-              {bio.length}/{200}
+              {bio.length}/{200} • Press Ctrl+Enter to save
             </p>
           </div>
 
@@ -139,11 +152,13 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
               type="text"
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
+              onKeyDown={handleInputKeyDown}
               placeholder="0x... (optional, for receiving tips)"
               className="w-full px-4 py-2 rounded-md border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-[oklch(0.75_0.15_166)]/50 focus:ring-[oklch(0.75_0.15_166)]/20 focus:outline-none"
             />
             <p className="text-xs text-white/40">
-              Add your wallet to receive tips from other users
+              Add your wallet to receive tips from other users • Press Enter to
+              save
             </p>
           </div>
         </motion.div>

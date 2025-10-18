@@ -57,6 +57,17 @@ export function CreatePostModal({ trigger, getPosts }: CreatePostModalProps) {
     }
   }, [api, currentUser, content, getPosts]);
 
+  // Handle Enter key to submit (Ctrl+Enter for multi-line)
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        createPost();
+      }
+    },
+    [createPost],
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
@@ -96,6 +107,7 @@ export function CreatePostModal({ trigger, getPosts }: CreatePostModalProps) {
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="What's on your mind?"
               className="min-h-[180px] resize-none border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-[oklch(0.75_0.15_166)]/50 focus:ring-[oklch(0.75_0.15_166)]/20"
               maxLength={500}
