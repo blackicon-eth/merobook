@@ -1,25 +1,64 @@
 'use client';
 
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { motion } from 'motion/react';
 import { Heart, DollarSign } from 'lucide-react';
 import { Card } from '../shadcn-ui/card';
 import { Button } from '../shadcn-ui/button';
-import { Post } from '@/api/AbiClient';
+import { AbiClient, Post } from '@/api/AbiClient';
+import { formatTimestamp } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface PostCardProps {
   post: Post;
-  onLike: (postId: string) => void;
+  api: AbiClient | null;
+  getPosts: () => Promise<void>;
+  currentUserId?: string; // Current logged-in user ID
 }
 
-export function PostCard({ post, onLike }: PostCardProps) {
+export function PostCard({
+  post,
+  api,
+  getPosts,
+  currentUserId = '1',
+}: PostCardProps) {
+  const [isLiking, setIsLiking] = useState(false);
+
   const handleTip = () => {
-    alert(`Tipping ${post.author_name}! (Feature coming soon)`);
+    toast.info('Tipping feature coming soon');
   };
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString();
-  };
+  // Check if current user has liked this post
+  const hasUserLiked = post.likes.some(
+    (like) => like.user_id === currentUserId,
+  );
+
+  // Get names of users who liked this post
+  const likeNames = post.likes.map((like) => like.user_name).join(', ');
+
+  // Handles the liking/unliking of a post
+  const handleLike = useCallback(
+    async (postId: string) => {
+      if (!api || isLiking) return;
+      setIsLiking(true);
+      try {
+        if (hasUserLiked) {
+          await api.unlikePost({ post_id: postId, user_id: currentUserId });
+          toast.success('Post unliked');
+        } else {
+          await api.likePost({ post_id: postId, user_id: currentUserId });
+          toast.success('Post liked');
+        }
+        await getPosts();
+      } catch (error) {
+        console.error('like/unlike error:', error);
+        toast.error('Failed to update like');
+      } finally {
+        setIsLiking(false);
+      }
+    },
+    [api, getPosts, currentUserId, hasUserLiked, isLiking],
+  );
 
   return (
     <Card className="p-6 bg-card/50 backdrop-blur border-border glow-border">
@@ -40,7 +79,7 @@ export function PostCard({ post, onLike }: PostCardProps) {
               {post.author_name}
             </h3>
             <p className="text-sm text-muted-foreground">
-              {formatDate(post.timestamp)}
+              {formatTimestamp(post.timestamp)}
             </p>
           </div>
 
@@ -48,14 +87,21 @@ export function PostCard({ post, onLike }: PostCardProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title={likeNames || 'No likes yet'}
+            >
               <Button
-                onClick={() => onLike(post.id)}
-                variant="secondary"
-                className="flex items-center gap-2"
+                onClick={() => handleLike(post.id)}
+                variant={hasUserLiked ? 'default' : 'secondary'}
+                className="flex items-center gap-2 w-[54px] shrink-0"
+                disabled={isLiking}
               >
-                <Heart className="size-4" />
-                <span>{post.likes}</span>
+                <Heart
+                  className={`size-4 ${hasUserLiked ? 'text-[#00d080] fill-current' : ''}`}
+                />
+                <span>{post.likes.length}</span>
               </Button>
             </motion.div>
 
@@ -63,7 +109,7 @@ export function PostCard({ post, onLike }: PostCardProps) {
               <Button
                 onClick={handleTip}
                 variant="secondary"
-                className="flex items-center gap-2 ml-auto"
+                className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
               >
                 <DollarSign className="size-4" />
                 <span>Tip</span>

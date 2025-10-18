@@ -7,6 +7,12 @@ import {
 
 // Generated types
 
+export interface Like {
+  user_id: string;
+  user_name: string;
+  timestamp: number;
+}
+
 export interface Post {
   id: string;
   author_id: string;
@@ -14,7 +20,7 @@ export interface Post {
   author_avatar: string;
   content: string;
   timestamp: number;
-  likes: number;
+  likes: Like[];
 }
 
 export interface User {
@@ -27,10 +33,12 @@ export interface User {
 
 
 
+
 export type AbiEvent =
   | { name: "UserCreated" }
   | { name: "PostCreated" }
   | { name: "PostLiked" }
+  | { name: "PostUnliked" }
 ;
 
 
@@ -226,10 +234,34 @@ export class AbiClient {
   /**
    * like_post
    */
-  public async likePost(params: { id: string }): Promise<Post> {
+  public async likePost(params: { post_id: string; user_id: string }): Promise<Post> {
     const response = await this.app.execute(this.context, 'like_post', params);
     if (response.success) {
       return response.result as Post;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * unlike_post
+   */
+  public async unlikePost(params: { post_id: string; user_id: string }): Promise<Post> {
+    const response = await this.app.execute(this.context, 'unlike_post', params);
+    if (response.success) {
+      return response.result as Post;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * check_user_liked_post
+   */
+  public async checkUserLikedPost(params: { post_id: string; user_id: string }): Promise<boolean> {
+    const response = await this.app.execute(this.context, 'check_user_liked_post', params);
+    if (response.success) {
+      return response.result as boolean;
     } else {
       throw new Error(response.error || 'Execution failed');
     }

@@ -6,13 +6,13 @@ import { createKvClient, AbiClient } from '../../features/kv/api';
 import type { Post } from '../../api/AbiClient';
 import { motion } from 'motion/react';
 import { PostCard } from '@/components/custom-ui/post-card';
+import { Button } from '@/components/shadcn-ui/button';
+import { PlusIcon } from 'lucide-react';
+import { CreatePostModal } from '@/components/custom-ui/create-post-modal';
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated, app, appUrl } = useCalimero();
-  const { show } = useToast();
-  const [author, setAuthor] = useState<string>('');
-  const [content, setContent] = useState<string>('');
   const [posts, setPosts] = useState<Post[]>([]);
   const [api, setApi] = useState<AbiClient | null>(null);
   const [_, setCurrentContext] = useState<{
@@ -74,55 +74,6 @@ export default function HomePage() {
     }
   }, [api]);
 
-  // Handles the creation of a new post
-  // const createPost = useCallback(async () => {
-  //   if (!api || !author.trim() || !content.trim()) {
-  //     show({
-  //       title: 'Please enter both author and content',
-  //       variant: 'error',
-  //     });
-  //     return;
-  //   }
-  //   try {
-  //     await api.createPost({ author: author.trim(), content: content.trim() });
-  //     await getPosts();
-  //     show({
-  //       title: `Post created successfully!`,
-  //       variant: 'success',
-  //     });
-  //     setAuthor('');
-  //     setContent('');
-  //   } catch (error) {
-  //     console.error('createPost error:', error);
-  //     show({
-  //       title: error instanceof Error ? error.message : 'Failed to create post',
-  //       variant: 'error',
-  //     });
-  //   }
-  // }, [api, author, content, getPosts, show]);
-
-  // Handles the liking of a post
-  const handleLikePost = useCallback(
-    async (postId: string) => {
-      if (!api) return;
-      try {
-        await api.likePost({ id: postId });
-        await getPosts();
-        show({
-          title: `Post liked!`,
-          variant: 'success',
-        });
-      } catch (error) {
-        console.error('likePost error:', error);
-        show({
-          title: error instanceof Error ? error.message : 'Failed to like post',
-          variant: 'error',
-        });
-      }
-    },
-    [api, getPosts, show],
-  );
-
   // On page load, retrieve all posts if authenticated and API is available
   useEffect(() => {
     if (isAuthenticated && api) {
@@ -131,17 +82,36 @@ export default function HomePage() {
   }, [isAuthenticated, api, getPosts]);
 
   return (
-    <div className="min-h-screen py-8 px-6 overflow-y-scroll">
+    <div className="h-full p-10 overflow-y-scroll">
       <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="flex justify-between items-center mb-8"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-2 glow-text">
-            Feed
-          </h1>
-          <p className="text-muted-foreground">See what's happening</p>
+          <div className="flex flex-col justify-center items-start gap-2">
+            <h1 className="text-4xl md:text-5xl font-bold mb-2"> Your Feed</h1>
+            <p className="text-muted-foreground">
+              See what's happening in your neighborhood
+            </p>
+          </div>
+
+          <CreatePostModal
+            trigger={
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2"
+              >
+                <Button variant="secondary" size="lg">
+                  <PlusIcon className="w-4 h-4" />
+                  New Post
+                </Button>
+              </motion.div>
+            }
+            api={api}
+            getPosts={getPosts}
+          />
         </motion.div>
 
         <div className="space-y-6">
@@ -152,7 +122,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <PostCard post={post} onLike={() => handleLikePost(post.id)} />
+              <PostCard post={post} api={api} getPosts={getPosts} />
             </motion.div>
           ))}
         </div>

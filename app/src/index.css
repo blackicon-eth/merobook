@@ -103,7 +103,7 @@
 
   .glow-border {
     box-shadow:
-      0 0 10px rgba(0, 255, 157, 0.3),
+      0 0 10px lab(88.9% -71.79 33.04 / 0.3),
       inset 0 0 10px rgba(0, 255, 157, 0.1);
   }
 }

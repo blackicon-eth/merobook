@@ -163,7 +163,7 @@ steps:
     type: wait
     seconds: 2
 
-  # Step 15: Like the first post
+  # Step 15: Like the first post (Charlie likes Alice's post)
   - name: Like Post 1
     type: call
     node: calimero-node-2
@@ -171,7 +171,8 @@ steps:
     executor_public_key: "{{public_key}}"
     method: like_post
     args:
-      id: "1"
+      post_id: "1"
+      user_id: "3"
     outputs:
       like_result: result
 

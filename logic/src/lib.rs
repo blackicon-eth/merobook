@@ -20,6 +20,15 @@ pub struct User {
 #[derive(Debug, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
+pub struct Like {
+    pub user_id: String,
+    pub user_name: String,
+    pub timestamp: u64,
+}
+
+#[derive(Debug, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
+#[borsh(crate = "calimero_sdk::borsh")]
+#[serde(crate = "calimero_sdk::serde")]
 pub struct Post {
     pub id: String,
     pub author_id: String,
@@ -27,7 +36,7 @@ pub struct Post {
     pub author_avatar: String,
     pub content: String,
     pub timestamp: u64,
-    pub likes: u32,
+    pub likes: Vec<Like>,
 }
 
 #[app::state(emits = for<'a> Event<'a>)]
@@ -53,8 +62,13 @@ pub enum Event<'a> {
         timestamp: u64,
     },
     PostLiked { 
-        id: &'a str, 
-        likes: u32,
+        id: &'a str,
+        user_id: &'a str,
+        user_name: &'a str,
+    },
+    PostUnliked {
+        id: &'a str,
+        user_id: &'a str,
     },
 }
 
@@ -140,7 +154,7 @@ impl SocialNetwork {
             author_avatar: author.avatar.clone(),
             content: content.clone(),
             timestamp,
-            likes: 0,
+            likes: Vec::new(),
         };
 
         app::emit!(Event::PostCreated {
@@ -176,23 +190,73 @@ impl SocialNetwork {
         Ok(post)
     }
 
-    pub fn like_post(&mut self, id: String) -> app::Result<Post> {
-        app::log!("Liking post with id: {:?}", id);
+    pub fn like_post(&mut self, post_id: String, user_id: String) -> app::Result<Post> {
+        app::log!("User {:?} liking post {:?}", user_id, post_id);
 
-        let Some(mut post) = self.posts.get(&id)? else {
-            app::bail!(Error::PostNotFound(&id));
+        let Some(mut post) = self.posts.get(&post_id)? else {
+            app::bail!(Error::PostNotFound(&post_id));
         };
 
-        post.likes += 1;
+        // Get the user to populate like info
+        let Some(user) = self.users.get(&user_id)? else {
+            app::bail!(Error::UserNotFound(&user_id));
+        };
+
+        // Check if user already liked this post
+        if post.likes.iter().any(|like| like.user_id == user_id) {
+            app::log!("User {:?} already liked post {:?}", user_id, post_id);
+            return Ok(post);
+        }
+
+        let like = Like {
+            user_id: user_id.clone(),
+            user_name: user.name.clone(),
+            timestamp: env::time_now(),
+        };
+
+        post.likes.push(like);
 
         app::emit!(Event::PostLiked {
-            id: &id,
-            likes: post.likes,
+            id: &post_id,
+            user_id: &user_id,
+            user_name: &user.name,
         });
 
-        self.posts.insert(id, post.clone())?;
+        self.posts.insert(post_id, post.clone())?;
 
         Ok(post)
+    }
+
+    pub fn unlike_post(&mut self, post_id: String, user_id: String) -> app::Result<Post> {
+        app::log!("User {:?} unliking post {:?}", user_id, post_id);
+
+        let Some(mut post) = self.posts.get(&post_id)? else {
+            app::bail!(Error::PostNotFound(&post_id));
+        };
+
+        // Remove the user's like
+        post.likes.retain(|like| like.user_id != user_id);
+
+        app::emit!(Event::PostUnliked {
+            id: &post_id,
+            user_id: &user_id,
+        });
+
+        self.posts.insert(post_id, post.clone())?;
+
+        Ok(post)
+    }
+
+    pub fn check_user_liked_post(&self, post_id: String, user_id: String) -> app::Result<bool> {
+        app::log!("Checking if user {:?} liked post {:?}", user_id, post_id);
+
+        let Some(post) = self.posts.get(&post_id)? else {
+            app::bail!(Error::PostNotFound(&post_id));
+        };
+
+        let has_liked = post.likes.iter().any(|like| like.user_id == user_id);
+
+        Ok(has_liked)
     }
 
     pub fn get_post_count(&self) -> app::Result<u64> {

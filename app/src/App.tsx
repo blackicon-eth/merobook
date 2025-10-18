@@ -6,6 +6,8 @@ import { ToastProvider } from '@calimero-network/mero-ui';
 import HomePage from './pages/home';
 import Authenticate from './pages/login/Authenticate';
 import { Navbar } from './components/custom-ui/navbar';
+import ProfilePage from './pages/profile/index';
+import { Toaster } from 'sonner';
 
 function AppContent() {
   const location = useLocation();
@@ -14,10 +16,12 @@ function AppContent() {
   return (
     <>
       {!isLoginPage && <Navbar />}
+      <Toaster richColors position="top-right" />
       <main className={isLoginPage ? 'h-screen' : 'h-[calc(100vh-80px)] mt-20'}>
         <Routes>
           <Route path="/" element={<Authenticate />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </main>
     </>
@@ -26,7 +30,7 @@ function AppContent() {
 
 export default function App() {
   const [clientAppId] = useState<string>(
-    'B8To1w9hAP2PsbYsCZ6Bzzj6L4eBUcMGiyE2x2K2MPge',
+    '6utdbhYLD8U7NGbRbUAh4mi9X21CRqyQCy5bu3tdGiiz',
   );
 
   return (
