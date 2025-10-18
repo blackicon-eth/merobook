@@ -11,6 +11,7 @@ import { CreatePostModal } from '@/components/custom-ui/create-post-modal';
 import { EditProfileModal } from '@/components/custom-ui/edit-profile-modal';
 import { Button } from '@/components/shadcn-ui/button';
 import { UserStats } from '@/components/custom-ui/user-stats';
+import { AddressBanner } from '@/components/custom-ui/address-banner';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -142,9 +143,13 @@ export default function ProfilePage() {
 
               {/* User Info */}
               <div className="relative flex-1 text-center md:text-left">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-                  {currentUser.name}
-                </h1>
+                <div className="flex justify-start items-center gap-4 mb-2">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                    {currentUser.name}
+                  </h1>
+                  {/* Wallet Address */}
+                  <AddressBanner address={currentUser.wallet_address} />
+                </div>
                 <p className="text-muted-foreground mb-4 max-w-xl">
                   {currentUser.bio}
                 </p>

@@ -9,6 +9,7 @@ import { useGeneralContext } from '@/contexts/general-context';
 import { Loader2, Calendar, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/shadcn-ui/button';
 import { UserStats } from '@/components/custom-ui/user-stats';
+import { AddressBanner } from '@/components/custom-ui/address-banner';
 
 export default function UserProfilePage() {
   const navigate = useNavigate();
@@ -155,9 +156,13 @@ export default function UserProfilePage() {
 
               {/* User Info */}
               <div className="relative flex-1 text-center md:text-left">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-                  {user.name}
-                </h1>
+                <div className="flex justify-start items-center gap-4 mb-2">
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                    {user.name}
+                  </h1>
+                  {/* Wallet Address */}
+                  <AddressBanner address={user.wallet_address} />
+                </div>
                 <p className="text-muted-foreground mb-4 max-w-xl">
                   {user.bio}
                 </p>

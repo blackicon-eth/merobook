@@ -26,6 +26,7 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
   const { currentUser, api, refreshUser } = useGeneralContext();
   const [name, setName] = useState<string>('');
   const [bio, setBio] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string>('');
   const [open, setOpen] = useState<boolean>(false);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
@@ -34,6 +35,7 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
     if (currentUser) {
       setName(currentUser.name);
       setBio(currentUser.bio);
+      setWalletAddress(currentUser.wallet_address || '');
     }
   }, [currentUser]);
 
@@ -49,6 +51,7 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
         user_id: currentUser.id,
         name: name.trim(),
         bio: bio.trim(),
+        wallet_address: walletAddress.trim() || null,
       });
       await refreshUser();
       toast.success('Profile updated successfully!');
@@ -61,7 +64,7 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
     } finally {
       setIsUpdating(false);
     }
-  }, [api, currentUser, name, bio, refreshUser]);
+  }, [api, currentUser, name, bio, walletAddress, refreshUser]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -124,6 +127,23 @@ export function EditProfileModal({ trigger }: EditProfileModalProps) {
             />
             <p className="text-xs text-white/40 text-right">
               {bio.length}/{200}
+            </p>
+          </div>
+
+          {/* Wallet Address Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white">
+              Ethereum Wallet Address
+            </label>
+            <input
+              type="text"
+              value={walletAddress}
+              onChange={(e) => setWalletAddress(e.target.value)}
+              placeholder="0x... (optional, for receiving tips)"
+              className="w-full px-4 py-2 rounded-md border border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-[oklch(0.75_0.15_166)]/50 focus:ring-[oklch(0.75_0.15_166)]/20 focus:outline-none"
+            />
+            <p className="text-xs text-white/40">
+              Add your wallet to receive tips from other users
             </p>
           </div>
         </motion.div>

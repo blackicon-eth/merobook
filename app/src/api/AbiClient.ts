@@ -21,6 +21,7 @@ export interface Post {
   content: string;
   timestamp: number;
   likes: Like[];
+  author_wallet_address: string | null;
 }
 
 export interface User {
@@ -28,6 +29,7 @@ export interface User {
   name: string;
   avatar: string;
   bio: string;
+  wallet_address: string | null;
 }
 
 
@@ -166,7 +168,7 @@ export class AbiClient {
   /**
    * create_user
    */
-  public async createUser(params: { name: string; avatar: string; bio: string; public_key: string }): Promise<User> {
+  public async createUser(params: { name: string; avatar: string; bio: string; public_key: string; wallet_address: string | null }): Promise<User> {
     const response = await this.app.execute(this.context, 'create_user', params);
     if (response.success) {
       return response.result as User;
@@ -226,7 +228,7 @@ export class AbiClient {
   /**
    * update_user
    */
-  public async updateUser(params: { user_id: string; name: string; bio: string }): Promise<User> {
+  public async updateUser(params: { user_id: string; name: string; bio: string; wallet_address: string | null }): Promise<User> {
     const response = await this.app.execute(this.context, 'update_user', params);
     if (response.success) {
       return response.result as User;

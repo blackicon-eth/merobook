@@ -180,19 +180,21 @@ export function PostCard({ post, getPosts }: PostCardProps) {
                 </Button>
               </motion.div>
             ) : (
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  onClick={handleTip}
-                  variant="secondary"
-                  className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
+              post.author_wallet_address && (
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <DollarSign className="size-4" />
-                  <span>Tip</span>
-                </Button>
-              </motion.div>
+                  <Button
+                    onClick={handleTip}
+                    variant="secondary"
+                    className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
+                  >
+                    <DollarSign className="size-4" />
+                    <span>Tip</span>
+                  </Button>
+                </motion.div>
+              )
             )}
           </div>
         </div>

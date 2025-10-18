@@ -77,6 +77,7 @@ steps:
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
       bio: "Web3 enthusiast and decentralization advocate"
       public_key: "{{member_public_key}}"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
     outputs:
       alice: result
 
@@ -91,6 +92,7 @@ steps:
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"
       bio: "Building the future of social networks"
       public_key: "demo_bob_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
     outputs:
       bob: result
 
@@ -105,8 +107,24 @@ steps:
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie"
       bio: "Just here to explore p2p tech"
       public_key: "{{public_key}}"
+      wallet_address: null
     outputs:
       charlie: result
+
+  - name: Create User Frank
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Frank"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Frank"
+      bio: "Crypto enthusiast and blockchain developer"
+      public_key: "demo_frank_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      frank: result
 
   - name: Wait for Users to Propagate
     type: wait
@@ -163,6 +181,24 @@ steps:
 
   # Step 14: Wait for the post to propagate
   - name: Wait for Post 3
+    type: wait
+    seconds: 2
+
+  # Step 14b: Create fourth demo post from Frank
+  - name: Create Post 4
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_post
+    args:
+      author_id: "4"
+      content: "Loving the decentralized future! Tips accepted 💰"
+    outputs:
+      post4_result: result
+
+  # Step 14c: Wait for the post to propagate
+  - name: Wait for Post 4
     type: wait
     seconds: 2
 

@@ -59,7 +59,7 @@ function AppContent() {
 
 export default function App() {
   const [clientAppId] = useState<string>(
-    '2qbsdveLAFvgCFhkXChpDCzWgjoihp3NNdDVZE2Kwiwf',
+    '4KWdSHcDJZX6aeGdwm33q9TNWuuHD82X3xZSbEqzy6io',
   );
 
   return (

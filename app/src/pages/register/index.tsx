@@ -17,6 +17,7 @@ export default function RegisterPage() {
 
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
   // Redirect if already registered
@@ -51,6 +52,7 @@ export default function RegisterPage() {
         avatar,
         bio: bio.trim() || 'New to Merobook!',
         public_key: currentPublicKey,
+        wallet_address: walletAddress.trim() || null,
       });
 
       toast.success('Registration successful! Welcome to Merobook! 🎉');
@@ -148,6 +150,27 @@ export default function RegisterPage() {
                 />
                 <p className="text-xs text-muted-foreground">
                   {bio.length}/200 characters
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="wallet"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Ethereum Wallet Address
+                </label>
+                <input
+                  id="wallet"
+                  type="text"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  placeholder="0x... (optional, for receiving tips)"
+                  className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={isRegistering}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add your wallet to receive tips from other users
                 </p>
               </div>
 

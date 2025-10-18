@@ -15,6 +15,8 @@ pub struct User {
     pub name: String,
     pub avatar: String,
     pub bio: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wallet_address: Option<String>,
 }
 
 #[derive(Debug, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
@@ -37,6 +39,8 @@ pub struct Post {
     pub content: String,
     pub timestamp: u64,
     pub likes: Vec<Like>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub author_wallet_address: Option<String>,
 }
 
 #[app::state(emits = for<'a> Event<'a>)]
@@ -106,7 +110,7 @@ impl SocialNetwork {
         }
     }
 
-    pub fn create_user(&mut self, name: String, avatar: String, bio: String, public_key: String) -> app::Result<User> {
+    pub fn create_user(&mut self, name: String, avatar: String, bio: String, public_key: String, wallet_address: Option<String>) -> app::Result<User> {
         app::log!("Creating user: {:?} with public_key: {:?}", name, public_key);
 
         // Check if public key is already linked to a user
@@ -122,6 +126,7 @@ impl SocialNetwork {
             name: name.clone(),
             avatar,
             bio,
+            wallet_address,
         };
 
         app::emit!(Event::UserCreated {
@@ -175,7 +180,7 @@ impl SocialNetwork {
         Ok(users)
     }
 
-    pub fn update_user(&mut self, user_id: String, name: String, bio: String) -> app::Result<User> {
+    pub fn update_user(&mut self, user_id: String, name: String, bio: String, wallet_address: Option<String>) -> app::Result<User> {
         app::log!("Updating user {:?} with name: {:?}, bio: {:?}", user_id, name, bio);
 
         let Some(mut user) = self.users.get(&user_id)? else {
@@ -184,6 +189,7 @@ impl SocialNetwork {
 
         user.name = name.clone();
         user.bio = bio.clone();
+        user.wallet_address = wallet_address;
 
         app::emit!(Event::UserUpdated {
             id: &user_id,
@@ -230,6 +236,7 @@ impl SocialNetwork {
             content: content.clone(),
             timestamp,
             likes: Vec::new(),
+            author_wallet_address: author.wallet_address.clone(),
         };
 
         app::emit!(Event::PostCreated {
