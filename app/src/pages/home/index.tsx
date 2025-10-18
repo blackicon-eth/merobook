@@ -1,22 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import {
-  Button,
-  Input,
-  Grid,
-  GridItem,
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  useToast,
-  Text,
-} from '@calimero-network/mero-ui';
-import { Heart } from '@calimero-network/mero-icons';
+import { useToast } from '@calimero-network/mero-ui';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
 import { createKvClient, AbiClient } from '../../features/kv/api';
 import type { Post } from '../../api/AbiClient';
-import { formatTimestamp } from '@/lib/utils';
+import { motion } from 'motion/react';
+import { PostCard } from '@/components/custom-ui/post-card';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -86,31 +75,31 @@ export default function HomePage() {
   }, [api]);
 
   // Handles the creation of a new post
-  const createPost = useCallback(async () => {
-    if (!api || !author.trim() || !content.trim()) {
-      show({
-        title: 'Please enter both author and content',
-        variant: 'error',
-      });
-      return;
-    }
-    try {
-      await api.createPost({ author: author.trim(), content: content.trim() });
-      await getPosts();
-      show({
-        title: `Post created successfully!`,
-        variant: 'success',
-      });
-      setAuthor('');
-      setContent('');
-    } catch (error) {
-      console.error('createPost error:', error);
-      show({
-        title: error instanceof Error ? error.message : 'Failed to create post',
-        variant: 'error',
-      });
-    }
-  }, [api, author, content, getPosts, show]);
+  // const createPost = useCallback(async () => {
+  //   if (!api || !author.trim() || !content.trim()) {
+  //     show({
+  //       title: 'Please enter both author and content',
+  //       variant: 'error',
+  //     });
+  //     return;
+  //   }
+  //   try {
+  //     await api.createPost({ author: author.trim(), content: content.trim() });
+  //     await getPosts();
+  //     show({
+  //       title: `Post created successfully!`,
+  //       variant: 'success',
+  //     });
+  //     setAuthor('');
+  //     setContent('');
+  //   } catch (error) {
+  //     console.error('createPost error:', error);
+  //     show({
+  //       title: error instanceof Error ? error.message : 'Failed to create post',
+  //       variant: 'error',
+  //     });
+  //   }
+  // }, [api, author, content, getPosts, show]);
 
   // Handles the liking of a post
   const handleLikePost = useCallback(
@@ -142,154 +131,32 @@ export default function HomePage() {
   }, [isAuthenticated, api, getPosts]);
 
   return (
-    <div className="w-full h-full text-foreground overflow-y-scroll">
-      <Grid
-        columns={1}
-        gap={32}
-        maxWidth="100%"
-        justify="center"
-        align="center"
-        style={{
-          minHeight: '100vh',
-          padding: '2rem',
-        }}
-      >
-        <GridItem>
-          <main
-            style={{
-              width: '100%',
-              maxWidth: '1200px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div style={{ maxWidth: '800px', width: '100%' }}>
-              <Card variant="rounded" style={{ marginBottom: '2rem' }}>
-                <CardHeader>
-                  <CardTitle>Create a New Post</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      createPost();
-                    }}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '1.5rem',
-                      width: '100%',
-                    }}
-                  >
-                    <Input
-                      type="text"
-                      placeholder="Your name"
-                      value={author}
-                      onChange={(e) => setAuthor(e.target.value)}
-                      style={{ width: '100%' }}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="What's on your mind?"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      style={{ width: '100%' }}
-                    />
-                    <Button
-                      type="submit"
-                      variant="success"
-                      style={{
-                        width: '100%',
-                        minHeight: '3rem',
-                      }}
-                    >
-                      Post
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-              <Card variant="rounded" style={{ width: '100%' }}>
-                <CardHeader>
-                  <CardTitle>Feed</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {posts.length === 0 ? (
-                    <div
-                      style={{
-                        color: '#aaa',
-                        textAlign: 'center',
-                        padding: '3rem 2rem',
-                        fontSize: '1.1rem',
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      No posts yet. Be the first to post!
-                    </div>
-                  ) : (
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '1rem',
-                      }}
-                    >
-                      {posts.map((post) => (
-                        <Card key={post.id} style={{ padding: '1rem' }}>
-                          <div style={{ marginBottom: '0.5rem' }}>
-                            <Text
-                              size="lg"
-                              style={{ fontWeight: 'bold', color: '#e5e7eb' }}
-                            >
-                              {post.author}
-                            </Text>
-                            <Text
-                              size="sm"
-                              color="muted"
-                              style={{ marginTop: '0.25rem' }}
-                            >
-                              {formatTimestamp(post.timestamp)}
-                            </Text>
-                          </div>
-                          <Text
-                            size="md"
-                            style={{ marginBottom: '1rem', color: '#d1d5db' }}
-                          >
-                            {post.content}
-                          </Text>
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem',
-                            }}
-                          >
-                            <Button
-                              onClick={() => handleLikePost(post.id)}
-                              style={{
-                                padding: '8px 16px',
-                                minWidth: 'auto',
-                                borderRadius: '6px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                              }}
-                            >
-                              <Heart size={18} />
-                              <Text size="sm">{post.likes}</Text>
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </main>
-        </GridItem>
-      </Grid>
+    <div className="min-h-screen py-8 px-6 overflow-y-scroll">
+      <div className="max-w-3xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-4xl md:text-5xl font-bold mb-2 glow-text">
+            Feed
+          </h1>
+          <p className="text-muted-foreground">See what's happening</p>
+        </motion.div>
+
+        <div className="space-y-6">
+          {posts.map((post, index) => (
+            <motion.div
+              key={post.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <PostCard post={post} onLike={() => handleLikePost(post.id)} />
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

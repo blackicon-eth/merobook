@@ -9,15 +9,26 @@ import {
 
 export interface Post {
   id: string;
-  author: string;
+  author_id: string;
+  author_name: string;
+  author_avatar: string;
   content: string;
   timestamp: number;
   likes: number;
 }
 
+export interface User {
+  id: string;
+  name: string;
+  avatar: string;
+  bio: string;
+}
+
+
 
 
 export type AbiEvent =
+  | { name: "UserCreated" }
   | { name: "PostCreated" }
   | { name: "PostLiked" }
 ;
@@ -141,9 +152,45 @@ export class AbiClient {
   }
 
   /**
+   * create_user
+   */
+  public async createUser(params: { name: string; avatar: string; bio: string }): Promise<User> {
+    const response = await this.app.execute(this.context, 'create_user', params);
+    if (response.success) {
+      return response.result as User;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * get_user
+   */
+  public async getUser(params: { id: string }): Promise<User> {
+    const response = await this.app.execute(this.context, 'get_user', params);
+    if (response.success) {
+      return response.result as User;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * get_all_users
+   */
+  public async getAllUsers(): Promise<User[]> {
+    const response = await this.app.execute(this.context, 'get_all_users', {});
+    if (response.success) {
+      return response.result as User[];
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
    * create_post
    */
-  public async createPost(params: { author: string; content: string }): Promise<Post> {
+  public async createPost(params: { author_id: string; content: string }): Promise<Post> {
     const response = await this.app.execute(this.context, 'create_post', params);
     if (response.success) {
       return response.result as Post;

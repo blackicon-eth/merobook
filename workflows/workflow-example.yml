@@ -60,7 +60,56 @@ steps:
     invitee_id: "{{public_key}}"
     invitation: "{{invitation}}"
 
-  # Step 7: Create first demo post
+  # Step 7: Wait for node-2 to sync
+  - name: Wait for Node 2 Sync
+    type: wait
+    seconds: 3
+
+  # Step 8: Create demo users (all from node-1 to avoid sync issues)
+  - name: Create User Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Alice"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
+      bio: "Web3 enthusiast and decentralization advocate"
+    outputs:
+      alice: result
+
+  - name: Create User Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Bob"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"
+      bio: "Building the future of social networks"
+    outputs:
+      bob: result
+
+  - name: Create User Charlie
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Charlie"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie"
+      bio: "Just here to explore p2p tech"
+    outputs:
+      charlie: result
+
+  - name: Wait for Users to Propagate
+    type: wait
+    seconds: 3
+
+  # Step 9: Create first demo post
   - name: Create Post 1
     type: call
     node: calimero-node-1
@@ -68,17 +117,17 @@ steps:
     executor_public_key: "{{member_public_key}}"
     method: create_post
     args:
-      author: "Alice"
+      author_id: "1"
       content: "Welcome to our p2p social network! 🎉"
     outputs:
       post1_result: result
 
-  # Step 8: Wait for the post to propagate
+  # Step 10: Wait for the post to propagate
   - name: Wait for Post 1
     type: wait
     seconds: 2
 
-  # Step 9: Create second demo post
+  # Step 11: Create second demo post
   - name: Create Post 2
     type: call
     node: calimero-node-1
@@ -86,17 +135,17 @@ steps:
     executor_public_key: "{{member_public_key}}"
     method: create_post
     args:
-      author: "Bob"
+      author_id: "2"
       content: "This is amazing! Decentralized social networking is the future! 🚀"
     outputs:
       post2_result: result
 
-  # Step 10: Wait for the post to propagate
+  # Step 12: Wait for the post to propagate
   - name: Wait for Post 2
     type: wait
     seconds: 2
 
-  # Step 11: Create third demo post from Node 2
+  # Step 13: Create third demo post from Node 2
   - name: Create Post 3
     type: call
     node: calimero-node-2
@@ -104,17 +153,17 @@ steps:
     executor_public_key: "{{public_key}}"
     method: create_post
     args:
-      author: "Charlie"
+      author_id: "3"
       content: "Just joined from node 2! This is so cool! 🌟"
     outputs:
       post3_result: result
 
-  # Step 12: Wait for the post to propagate
+  # Step 14: Wait for the post to propagate
   - name: Wait for Post 3
     type: wait
     seconds: 2
 
-  # Step 13: Like the first post
+  # Step 15: Like the first post
   - name: Like Post 1
     type: call
     node: calimero-node-2
@@ -126,7 +175,7 @@ steps:
     outputs:
       like_result: result
 
-  # Step 14: Get all posts to verify
+  # Step 16: Get all posts to verify
   - name: Get All Posts
     type: call
     node: calimero-node-1
