@@ -3,11 +3,11 @@
 import React, { useCallback } from 'react';
 import { motion } from 'motion/react';
 import { useCalimero } from '@calimero-network/calimero-client';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../shadcn-ui/button';
 import { cn } from '@/lib/utils';
 import { useGeneralContext } from '@/contexts/general-context';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, Home, User } from 'lucide-react';
 
 export function Navbar() {
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ export function Navbar() {
 
   // Navbar links
   const navLinks = [
-    { href: '/home', label: 'Home' },
-    { href: '/profile', label: 'Profile' },
+    { href: '/home', label: 'Home', icon: Home },
+    { href: '/profile', label: 'Profile', icon: User },
   ];
 
   return (
@@ -36,7 +36,7 @@ export function Navbar() {
       <div className="w-full px-4 sm:px-6 lg:px-10">
         <div className="flex h-16 sm:h-20 items-center justify-between">
           {/* Logo */}
-          <a href="/home" className="hidden md:block cursor-pointer">
+          <Link to="/home" className="hidden md:block cursor-pointer">
             <motion.div
               whileHover={{ scale: 1.01 }}
               className="flex items-center gap-2 w-[353px]"
@@ -53,23 +53,27 @@ export function Navbar() {
                 MEROBOOK
               </span>
             </motion.div>
-          </a>
+          </Link>
 
           {/* Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a key={link.href} href={link.href} className="cursor-pointer">
-                <motion.span
-                  whileHover={{ scale: 1.05 }}
-                  className={cn(
-                    'text-xl text-muted-foreground hover:text-primary transition-colors',
-                    location.pathname === link.href && 'text-primary',
-                  )}
-                >
-                  {link.label}
-                </motion.span>
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link key={link.href} to={link.href} className="cursor-pointer">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className={cn(
+                      'flex items-center gap-2 text-xl text-muted-foreground hover:text-primary transition-colors',
+                      location.pathname === link.href && 'text-primary',
+                    )}
+                  >
+                    <Icon className="size-5" />
+                    <span>{link.label}</span>
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
 
           {/* User Info & Logout */}

@@ -57,6 +57,11 @@ pub enum Event<'a> {
         id: &'a str,
         name: &'a str,
     },
+    UserUpdated {
+        id: &'a str,
+        name: &'a str,
+        bio: &'a str,
+    },
     PostCreated { 
         id: &'a str, 
         author_id: &'a str, 
@@ -71,6 +76,10 @@ pub enum Event<'a> {
     PostUnliked {
         id: &'a str,
         user_id: &'a str,
+    },
+    PostDeleted {
+        id: &'a str,
+        author_id: &'a str,
     },
 }
 
@@ -166,6 +175,41 @@ impl SocialNetwork {
         Ok(users)
     }
 
+    pub fn update_user(&mut self, user_id: String, name: String, bio: String) -> app::Result<User> {
+        app::log!("Updating user {:?} with name: {:?}, bio: {:?}", user_id, name, bio);
+
+        let Some(mut user) = self.users.get(&user_id)? else {
+            app::bail!(Error::UserNotFound(&user_id));
+        };
+
+        user.name = name.clone();
+        user.bio = bio.clone();
+
+        app::emit!(Event::UserUpdated {
+            id: &user_id,
+            name: &name,
+            bio: &bio,
+        });
+
+        self.users.insert(user_id.clone(), user.clone())?;
+
+        // Update author_name in all posts by this user
+        app::log!("Updating author_name in all posts by user {:?}", user_id);
+        
+        // First collect all posts that need updating
+        let posts_to_update: Vec<(String, Post)> = self.posts.entries()?
+            .filter(|(_, post)| post.author_id == user_id)
+            .collect();
+        
+        // Then update them
+        for (post_id, mut post) in posts_to_update {
+            post.author_name = name.clone();
+            self.posts.insert(post_id, post)?;
+        }
+
+        Ok(user)
+    }
+
     pub fn create_post(&mut self, author_id: String, content: String) -> app::Result<Post> {
         app::log!("Creating post by user: {:?} with content: {:?}", author_id, content);
 
@@ -219,6 +263,29 @@ impl SocialNetwork {
         };
 
         Ok(post)
+    }
+
+    pub fn delete_post(&mut self, post_id: String, user_id: String) -> app::Result<()> {
+        app::log!("User {:?} deleting post {:?}", user_id, post_id);
+
+        let Some(post) = self.posts.get(&post_id)? else {
+            app::bail!(Error::PostNotFound(&post_id));
+        };
+
+        // Check if the user is the author of the post
+        if post.author_id != user_id {
+            app::log!("User {:?} is not authorized to delete post {:?}", user_id, post_id);
+            app::bail!(Error::UserNotFound("Not authorized to delete this post"));
+        }
+
+        app::emit!(Event::PostDeleted {
+            id: &post_id,
+            author_id: &user_id,
+        });
+
+        self.posts.remove(&post_id)?;
+
+        Ok(())
     }
 
     pub fn like_post(&mut self, post_id: String, user_id: String) -> app::Result<Post> {

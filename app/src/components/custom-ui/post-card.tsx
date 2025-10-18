@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useCallback, useState } from 'react';
-import { motion } from 'motion/react';
-import { Heart, DollarSign } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { Heart, DollarSign, Trash2, Loader2 } from 'lucide-react';
 import { Card } from '../shadcn-ui/card';
 import { Button } from '../shadcn-ui/button';
 import { Post } from '@/api/AbiClient';
@@ -18,15 +18,46 @@ interface PostCardProps {
 export function PostCard({ post, getPosts }: PostCardProps) {
   const { currentUser, api } = useGeneralContext();
   const [isLiking, setIsLiking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleTip = () => {
     toast.info('Tipping feature coming soon');
   };
 
+  // Handles the deletion of a post
+  const handleDelete = useCallback(
+    async (postId: string) => {
+      if (!api || isDeleting || !currentUser) {
+        return;
+      }
+
+      // Confirm deletion
+      if (!window.confirm('Are you sure you want to delete this post?')) {
+        return;
+      }
+
+      setIsDeleting(true);
+      try {
+        await api.deletePost({ post_id: postId, user_id: currentUser.id });
+        toast.success('Post deleted successfully');
+        await getPosts();
+      } catch (error) {
+        console.error('delete post error:', error);
+        toast.error('Failed to delete post');
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [api, getPosts, currentUser, isDeleting],
+  );
+
   // Check if current user has liked this post
   const hasUserLiked = currentUser
     ? post.likes.some((like) => like.user_id === currentUser.id)
     : false;
+
+  // Check if this is the current user's own post
+  const isOwnPost = currentUser?.id === post.author_id;
 
   // Get names of users who liked this post
   const likeNames = post.likes.map((like) => like.user_name).join(', ');
@@ -103,16 +134,57 @@ export function PostCard({ post, getPosts }: PostCardProps) {
               </Button>
             </motion.div>
 
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                onClick={handleTip}
-                variant="secondary"
-                className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
+            {isOwnPost ? (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <DollarSign className="size-4" />
-                <span>Tip</span>
-              </Button>
-            </motion.div>
+                <Button
+                  onClick={() => handleDelete(post.id)}
+                  variant="secondary"
+                  className="flex items-center gap-2 ml-auto w-[90px] shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                  disabled={isDeleting}
+                >
+                  <AnimatePresence mode="wait">
+                    {isDeleting ? (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <Loader2 className="size-4 animate-spin" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="delete"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="size-4" />
+                        <span>Delete</span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </motion.div>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  onClick={handleTip}
+                  variant="secondary"
+                  className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
+                >
+                  <DollarSign className="size-4" />
+                  <span>Tip</span>
+                </Button>
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
