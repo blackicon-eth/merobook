@@ -1,0 +1,143 @@
+description: Social Network Bootstrap Workflow
+name: Social Network Calimero Workflow
+
+force_pull_image: true
+auth_service: true
+
+nodes:
+  chain_id: testnet-1
+  count: 2
+  image: ghcr.io/calimero-network/merod:edge
+  prefix: calimero-node
+
+steps:
+  # Step 1: Install the application on the first node
+  - name: Install Application on Node 1
+    type: install_application
+    node: calimero-node-1
+    path: logic/res/social_network.wasm
+    dev: true
+    outputs:
+      app_id: applicationId
+
+  # Step 2: Create a context using the installed application
+  - name: Create Context on Node 1
+    type: create_context
+    node: calimero-node-1
+    application_id: "{{app_id}}"
+    outputs:
+      context_id: contextId
+      member_public_key: memberPublicKey
+
+  # Step 3: Generate an identity on the second node
+  - name: Create Identity on Node 2
+    type: create_identity
+    node: calimero-node-2
+    outputs:
+      public_key: publicKey
+
+  # Step 4: Wait for identity creation to complete
+  - name: Wait for Identity Creation
+    type: wait
+    seconds: 5
+
+  # Step 5: Invite the second node to join the context
+  - name: Invite Node 2 from Node 1
+    type: invite_identity
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    grantee_id: "{{public_key}}"
+    granter_id: "{{member_public_key}}"
+    capability: member
+    outputs:
+      invitation: invitation
+
+  # Step 6: Join the context from the second node
+  - name: Join Context from Node 2
+    type: join_context
+    node: calimero-node-2
+    context_id: "{{context_id}}"
+    invitee_id: "{{public_key}}"
+    invitation: "{{invitation}}"
+
+  # Step 7: Create first demo post
+  - name: Create Post 1
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_post
+    args:
+      author: "Alice"
+      content: "Welcome to our p2p social network! 🎉"
+    outputs:
+      post1_result: result
+
+  # Step 8: Wait for the post to propagate
+  - name: Wait for Post 1
+    type: wait
+    seconds: 2
+
+  # Step 9: Create second demo post
+  - name: Create Post 2
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_post
+    args:
+      author: "Bob"
+      content: "This is amazing! Decentralized social networking is the future! 🚀"
+    outputs:
+      post2_result: result
+
+  # Step 10: Wait for the post to propagate
+  - name: Wait for Post 2
+    type: wait
+    seconds: 2
+
+  # Step 11: Create third demo post from Node 2
+  - name: Create Post 3
+    type: call
+    node: calimero-node-2
+    context_id: "{{context_id}}"
+    executor_public_key: "{{public_key}}"
+    method: create_post
+    args:
+      author: "Charlie"
+      content: "Just joined from node 2! This is so cool! 🌟"
+    outputs:
+      post3_result: result
+
+  # Step 12: Wait for the post to propagate
+  - name: Wait for Post 3
+    type: wait
+    seconds: 2
+
+  # Step 13: Like the first post
+  - name: Like Post 1
+    type: call
+    node: calimero-node-2
+    context_id: "{{context_id}}"
+    executor_public_key: "{{public_key}}"
+    method: like_post
+    args:
+      id: "1"
+    outputs:
+      like_result: result
+
+  # Step 14: Get all posts to verify
+  - name: Get All Posts
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: get_all_posts
+    args: {}
+    outputs:
+      all_posts: result
+
+stop_all_nodes: false
+restart: true
+nuke: false
+wait_timeout: 60

@@ -1,0 +1,38 @@
+# Dependencies
+node_modules
+app/node_modules
+
+# Environment
+.env
+.env.*
+app/.env
+app/.env.*
+
+# Rust build artifacts (IMPORTANT!)
+logic/target/
+logic/Cargo.lock
+
+# Calimero build outputs
+logic/res/
+
+# Local Calimero node data
+data/
+
+# Git hooks
+.husky
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+app/dist/
+app/build/
+*.log
+
+# Vite
+app/node_modules/.vite/

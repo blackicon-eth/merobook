@@ -1,0 +1,42 @@
+import React, { useState } from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { CalimeroProvider, AppMode } from '@calimero-network/calimero-client';
+import { ToastProvider } from '@calimero-network/mero-ui';
+
+import HomePage from './pages/home';
+import Authenticate from './pages/login/Authenticate';
+import { Navbar } from './components/custom-ui/navbar';
+
+function AppContent() {
+  return (
+    <>
+      <Navbar />
+      <main className="h-[calc(100vh-80px)] mt-20">
+        <Routes>
+          <Route path="/" element={<Authenticate />} />
+          <Route path="/home" element={<HomePage />} />
+        </Routes>
+      </main>
+    </>
+  );
+}
+
+export default function App() {
+  const [clientAppId] = useState<string>(
+    'GFnt2Uh83vYFvo19to2u7W6sfX3HWVT7ttowBjPcxqwa',
+  );
+
+  return (
+    <CalimeroProvider
+      clientApplicationId={clientAppId}
+      applicationPath={window.location.pathname || '/'}
+      mode={AppMode.MultiContext}
+    >
+      <ToastProvider>
+        <BrowserRouter basename="/">
+          <AppContent />
+        </BrowserRouter>
+      </ToastProvider>
+    </CalimeroProvider>
+  );
+}
