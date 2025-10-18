@@ -47,6 +47,8 @@ pub struct SocialNetwork {
     posts: UnorderedMap<String, Post>,
     post_counter: u64,
     user_counter: u64,
+    // Maps public key to user ID
+    public_key_to_user_id: UnorderedMap<String, String>,
 }
 
 #[app::event]
@@ -91,11 +93,17 @@ impl SocialNetwork {
             posts: UnorderedMap::new(),
             post_counter: 0,
             user_counter: 0,
+            public_key_to_user_id: UnorderedMap::new(),
         }
     }
 
-    pub fn create_user(&mut self, name: String, avatar: String, bio: String) -> app::Result<User> {
-        app::log!("Creating user: {:?}", name);
+    pub fn create_user(&mut self, name: String, avatar: String, bio: String, public_key: String) -> app::Result<User> {
+        app::log!("Creating user: {:?} with public_key: {:?}", name, public_key);
+
+        // Check if public key is already linked to a user
+        if let Some(_) = self.public_key_to_user_id.get(&public_key)? {
+            app::bail!(Error::UserNotFound("Public key already linked to a user"));
+        }
 
         self.user_counter += 1;
         let id = self.user_counter.to_string();
@@ -112,9 +120,32 @@ impl SocialNetwork {
             name: &name,
         });
 
-        self.users.insert(id, user.clone())?;
+        self.users.insert(id.clone(), user.clone())?;
+        self.public_key_to_user_id.insert(public_key, id)?;
 
         Ok(user)
+    }
+
+    pub fn get_user_by_public_key(&self, public_key: String) -> app::Result<User> {
+        app::log!("Getting user by public_key: {:?}", public_key);
+
+        let Some(user_id) = self.public_key_to_user_id.get(&public_key)? else {
+            app::bail!(Error::UserNotFound(&public_key));
+        };
+
+        let Some(user) = self.users.get(&user_id)? else {
+            app::bail!(Error::UserNotFound(&user_id));
+        };
+
+        Ok(user)
+    }
+
+    pub fn check_public_key_registered(&self, public_key: String) -> app::Result<bool> {
+        app::log!("Checking if public_key is registered: {:?}", public_key);
+
+        let has_user = self.public_key_to_user_id.get(&public_key)?.is_some();
+
+        Ok(has_user)
     }
 
     pub fn get_user<'a>(&self, id: &'a str) -> app::Result<User> {

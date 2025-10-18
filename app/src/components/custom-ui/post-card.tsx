@@ -5,23 +5,18 @@ import { motion } from 'motion/react';
 import { Heart, DollarSign } from 'lucide-react';
 import { Card } from '../shadcn-ui/card';
 import { Button } from '../shadcn-ui/button';
-import { AbiClient, Post } from '@/api/AbiClient';
+import { Post } from '@/api/AbiClient';
 import { formatTimestamp } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useGeneralContext } from '@/contexts/general-context';
 
 interface PostCardProps {
   post: Post;
-  api: AbiClient | null;
   getPosts: () => Promise<void>;
-  currentUserId?: string; // Current logged-in user ID
 }
 
-export function PostCard({
-  post,
-  api,
-  getPosts,
-  currentUserId = '1',
-}: PostCardProps) {
+export function PostCard({ post, getPosts }: PostCardProps) {
+  const { currentUser, api } = useGeneralContext();
   const [isLiking, setIsLiking] = useState(false);
 
   const handleTip = () => {
@@ -29,9 +24,9 @@ export function PostCard({
   };
 
   // Check if current user has liked this post
-  const hasUserLiked = post.likes.some(
-    (like) => like.user_id === currentUserId,
-  );
+  const hasUserLiked = currentUser
+    ? post.likes.some((like) => like.user_id === currentUser.id)
+    : false;
 
   // Get names of users who liked this post
   const likeNames = post.likes.map((like) => like.user_name).join(', ');
@@ -39,15 +34,18 @@ export function PostCard({
   // Handles the liking/unliking of a post
   const handleLike = useCallback(
     async (postId: string) => {
-      if (!api || isLiking) return;
+      if (!api || isLiking || !currentUser) {
+        if (!currentUser) {
+          toast.error('Please register your user first');
+        }
+        return;
+      }
       setIsLiking(true);
       try {
         if (hasUserLiked) {
-          await api.unlikePost({ post_id: postId, user_id: currentUserId });
-          toast.success('Post unliked');
+          await api.unlikePost({ post_id: postId, user_id: currentUser.id });
         } else {
-          await api.likePost({ post_id: postId, user_id: currentUserId });
-          toast.success('Post liked');
+          await api.likePost({ post_id: postId, user_id: currentUser.id });
         }
         await getPosts();
       } catch (error) {
@@ -57,7 +55,7 @@ export function PostCard({
         setIsLiking(false);
       }
     },
-    [api, getPosts, currentUserId, hasUserLiked, isLiking],
+    [api, getPosts, currentUser, hasUserLiked, isLiking],
   );
 
   return (

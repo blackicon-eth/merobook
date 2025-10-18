@@ -1,27 +1,47 @@
 import React, { useState } from 'react';
 import { Routes, Route, BrowserRouter, useLocation } from 'react-router-dom';
 import { CalimeroProvider, AppMode } from '@calimero-network/calimero-client';
-import { ToastProvider } from '@calimero-network/mero-ui';
 
 import HomePage from './pages/home';
 import Authenticate from './pages/login/Authenticate';
+import RegisterPage from './pages/register';
 import { Navbar } from './components/custom-ui/navbar';
 import ProfilePage from './pages/profile/index';
 import { Toaster } from 'sonner';
+import { GeneralContextProvider } from './contexts/general-context';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
 function AppContent() {
   const location = useLocation();
-  const isLoginPage = location.pathname === '/';
+  const isPublicPage =
+    location.pathname === '/' || location.pathname === '/register';
 
   return (
     <>
-      {!isLoginPage && <Navbar />}
+      {!isPublicPage && <Navbar />}
       <Toaster richColors position="top-right" />
-      <main className={isLoginPage ? 'h-screen' : 'h-[calc(100vh-80px)] mt-20'}>
+      <main
+        className={isPublicPage ? 'h-screen' : 'h-[calc(100vh-80px)] mt-20'}
+      >
         <Routes>
           <Route path="/" element={<Authenticate />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
     </>
@@ -30,7 +50,7 @@ function AppContent() {
 
 export default function App() {
   const [clientAppId] = useState<string>(
-    '6utdbhYLD8U7NGbRbUAh4mi9X21CRqyQCy5bu3tdGiiz',
+    'HTHsxrPnWNkF4kTn1egfT79hdW7htBUrYTCuuENjH9Qg',
   );
 
   return (
@@ -39,11 +59,11 @@ export default function App() {
       applicationPath={window.location.pathname || '/'}
       mode={AppMode.MultiContext}
     >
-      <ToastProvider>
+      <GeneralContextProvider>
         <BrowserRouter basename="/">
           <AppContent />
         </BrowserRouter>
-      </ToastProvider>
+      </GeneralContextProvider>
     </CalimeroProvider>
   );
 }

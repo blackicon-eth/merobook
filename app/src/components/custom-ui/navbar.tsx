@@ -6,11 +6,14 @@ import { useCalimero } from '@calimero-network/calimero-client';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../shadcn-ui/button';
 import { cn } from '@/lib/utils';
+import { useGeneralContext } from '@/contexts/general-context';
+import { UserCircle } from 'lucide-react';
 
 export function Navbar() {
   const navigate = useNavigate();
   const { logout } = useCalimero();
   const location = useLocation();
+  const { currentUser, isLoadingUser } = useGeneralContext();
 
   // Handles the logout of the user
   const doLogout = useCallback(() => {
@@ -69,9 +72,35 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Logout Button */}
-          <div className="flex justify-end items-center w-[353px]">
-            <Button onClick={doLogout}>Logout</Button>
+          {/* User Info & Logout */}
+          <div className="flex justify-end items-center gap-3 w-[353px]">
+            {isLoadingUser ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="size-6 rounded-full bg-muted animate-pulse" />
+                Loading...
+              </div>
+            ) : currentUser ? (
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-full overflow-hidden bg-secondary border border-primary shrink-0">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-sm font-medium text-foreground hidden lg:inline">
+                  {currentUser.name}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <UserCircle className="size-6" />
+                <span className="hidden lg:inline">Not registered</span>
+              </div>
+            )}
+            <Button onClick={doLogout} size="sm">
+              Logout
+            </Button>
           </div>
         </div>
       </div>

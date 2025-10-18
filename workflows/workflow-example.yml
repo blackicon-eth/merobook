@@ -76,6 +76,7 @@ steps:
       name: "Alice"
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice"
       bio: "Web3 enthusiast and decentralization advocate"
+      public_key: "{{member_public_key}}"
     outputs:
       alice: result
 
@@ -89,6 +90,7 @@ steps:
       name: "Bob"
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob"
       bio: "Building the future of social networks"
+      public_key: "demo_bob_key"
     outputs:
       bob: result
 
@@ -102,6 +104,7 @@ steps:
       name: "Charlie"
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie"
       bio: "Just here to explore p2p tech"
+      public_key: "{{public_key}}"
     outputs:
       charlie: result
 

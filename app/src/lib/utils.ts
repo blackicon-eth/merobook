@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Formats the timestamp into a readable format
+// Calimero timestamps are in nanoseconds, JavaScript Date expects milliseconds
 export const formatTimestamp = (timestamp: number) => {
-  const date = new Date(timestamp);
+  // Convert nanoseconds to milliseconds by dividing by 1,000,000
+  const timestampMs = timestamp / 1_000_000;
+  const date = new Date(timestampMs);
   return date.toLocaleString();
 };

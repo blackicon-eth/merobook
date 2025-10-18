@@ -1,25 +1,19 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useToast } from '@calimero-network/mero-ui';
 import { useNavigate } from 'react-router-dom';
 import { useCalimero } from '@calimero-network/calimero-client';
-import { createKvClient, AbiClient } from '../../features/kv/api';
 import type { Post } from '../../api/AbiClient';
 import { motion } from 'motion/react';
 import { PostCard } from '@/components/custom-ui/post-card';
 import { Button } from '@/components/shadcn-ui/button';
 import { PlusIcon } from 'lucide-react';
 import { CreatePostModal } from '@/components/custom-ui/create-post-modal';
+import { useGeneralContext } from '@/contexts/general-context';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { isAuthenticated, app, appUrl } = useCalimero();
+  const { api } = useGeneralContext();
+  const { isAuthenticated } = useCalimero();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [api, setApi] = useState<AbiClient | null>(null);
-  const [_, setCurrentContext] = useState<{
-    applicationId: string;
-    contextId: string;
-    nodeUrl: string;
-  } | null>(null);
   const loadingPostsRef = useRef<boolean>(false);
 
   // Handles the navigation to the login page if the user is not authenticated
@@ -28,34 +22,6 @@ export default function HomePage() {
       navigate('/');
     }
   }, [isAuthenticated, navigate]);
-
-  // Create API client when app is available
-  useEffect(() => {
-    if (!app) return;
-
-    const initializeApi = async () => {
-      try {
-        const client = await createKvClient(app);
-        setApi(client);
-
-        // Get context information
-        const contexts = await app.fetchContexts();
-        if (contexts.length > 0) {
-          const context = contexts[0];
-          setCurrentContext({
-            applicationId: context.applicationId,
-            contextId: context.contextId,
-            nodeUrl: appUrl || 'http://node1.127.0.0.1.nip.io',
-          });
-        }
-      } catch (error) {
-        console.error('Failed to create API client:', error);
-        window.alert('Failed to initialize API client');
-      }
-    };
-
-    initializeApi();
-  }, [app, appUrl]);
 
   // Handles the retrieval of all posts
   const getPosts = useCallback(async () => {
@@ -109,7 +75,6 @@ export default function HomePage() {
                 </Button>
               </motion.div>
             }
-            api={api}
             getPosts={getPosts}
           />
         </motion.div>
@@ -122,7 +87,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <PostCard post={post} api={api} getPosts={getPosts} />
+              <PostCard post={post} getPosts={getPosts} />
             </motion.div>
           ))}
         </div>

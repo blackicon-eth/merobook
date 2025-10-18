@@ -18,17 +18,24 @@ import {
   CalimeroConnectButton,
   ConnectionType,
 } from '@calimero-network/calimero-client';
+import { useGeneralContext } from '@/contexts/general-context';
 import translations from '../../constants/en.global.json';
 
 export default function Authenticate() {
   const navigate = useNavigate();
   const { isAuthenticated } = useCalimero();
+  const { currentUser, isLoadingUser } = useGeneralContext();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/home');
+    if (isAuthenticated && !isLoadingUser) {
+      // Redirect to register if user is not registered, otherwise go to home
+      if (currentUser) {
+        navigate('/home');
+      } else {
+        navigate('/register');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, currentUser, isLoadingUser, navigate]);
 
   return (
     <>
