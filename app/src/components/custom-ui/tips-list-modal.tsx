@@ -33,7 +33,7 @@ export function TipsListModal({
     return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
   };
 
-  // Function to get Base Sepolia block explorer link
+  // Function to get Base mainnet block explorer link
   const getExplorerLink = (txHash: string) => {
     return `https://basescan.org/tx/${txHash}`;
   };
