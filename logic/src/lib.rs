@@ -483,11 +483,7 @@ impl SocialNetwork {
 
     // Follow a user
     pub fn follow_user(&mut self, follower_id: String, followee_id: String) -> app::Result<()> {
-        app::log!(
-            "User {:?} following user {:?}",
-            follower_id,
-            followee_id
-        );
+        app::log!("User {:?} following user {:?}", follower_id, followee_id);
 
         // Validate both users exist
         if self.users.get(&follower_id)?.is_none() {
@@ -504,7 +500,7 @@ impl SocialNetwork {
 
         // Get or create followers list for followee
         let mut followers_list = self.followers.get(&followee_id)?.unwrap_or_default();
-        
+
         // Check if already following
         if followers_list.contains(&follower_id) {
             app::bail!(Error::UserNotFound("Already following this user"));
@@ -527,16 +523,8 @@ impl SocialNetwork {
     }
 
     // Unfollow a user
-    pub fn unfollow_user(
-        &mut self,
-        follower_id: String,
-        followee_id: String,
-    ) -> app::Result<()> {
-        app::log!(
-            "User {:?} unfollowing user {:?}",
-            follower_id,
-            followee_id
-        );
+    pub fn unfollow_user(&mut self, follower_id: String, followee_id: String) -> app::Result<()> {
+        app::log!("User {:?} unfollowing user {:?}", follower_id, followee_id);
 
         // Remove from followee's followers list
         if let Some(mut followers_list) = self.followers.get(&followee_id)? {
