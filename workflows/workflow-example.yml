@@ -126,6 +126,156 @@ steps:
     outputs:
       frank: result
 
+  - name: Create User Diana
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Diana"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diana"
+      bio: "Digital artist exploring Web3 and NFTs"
+      public_key: "demo_diana_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      diana: result
+
+  - name: Create User Eve
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Eve"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Eve"
+      bio: "Smart contract developer and DeFi enthusiast"
+      public_key: "demo_eve_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      eve: result
+
+  - name: Create User George
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "George"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=George"
+      bio: "Tech blogger covering blockchain innovations"
+      public_key: "demo_george_key"
+      wallet_address: null
+    outputs:
+      george: result
+
+  - name: Create User Hannah
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Hannah"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hannah"
+      bio: "Community manager passionate about decentralization"
+      public_key: "demo_hannah_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      hannah: result
+
+  - name: Create User Ivan
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Ivan"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ivan"
+      bio: "Software engineer learning about peer-to-peer networks"
+      public_key: "demo_ivan_key"
+      wallet_address: null
+    outputs:
+      ivan: result
+
+  - name: Create User Julia
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Julia"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Julia"
+      bio: "Data scientist exploring blockchain analytics"
+      public_key: "demo_julia_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      julia: result
+
+  - name: Create User Kevin
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Kevin"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kevin"
+      bio: "Gaming enthusiast and metaverse explorer"
+      public_key: "demo_kevin_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      kevin: result
+
+  - name: Create User Luna
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Luna"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Luna"
+      bio: "Product designer crafting Web3 experiences"
+      public_key: "demo_luna_key"
+      wallet_address: null
+    outputs:
+      luna: result
+
+  - name: Create User Mike
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Mike"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike"
+      bio: "Entrepreneur building on decentralized protocols"
+      public_key: "demo_mike_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      mike: result
+
+  - name: Create User Nina
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: create_user
+    args:
+      name: "Nina"
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nina"
+      bio: "Researcher studying decentralized social networks"
+      public_key: "demo_nina_key"
+      wallet_address: "0x82A29547CA8970c2aDECF4C2db7e364339f9a4B7"
+    outputs:
+      nina: result
+
   - name: Wait for Users to Propagate
     type: wait
     seconds: 3
@@ -140,6 +290,7 @@ steps:
     args:
       author_id: "1"
       content: "Welcome to our p2p social network! 🎉"
+      image_url: null
     outputs:
       post1_result: result
 
@@ -158,6 +309,7 @@ steps:
     args:
       author_id: "2"
       content: "This is amazing! Decentralized social networking is the future! 🚀"
+      image_url: "https://picsum.photos/seed/decentralized/800/600"
     outputs:
       post2_result: result
 
@@ -176,6 +328,7 @@ steps:
     args:
       author_id: "3"
       content: "Just joined from node 2! This is so cool! 🌟"
+      image_url: null
     outputs:
       post3_result: result
 
@@ -194,6 +347,7 @@ steps:
     args:
       author_id: "4"
       content: "Loving the decentralized future! Tips accepted 💰"
+      image_url: "https://picsum.photos/seed/crypto/800/600"
     outputs:
       post4_result: result
 
@@ -225,6 +379,438 @@ steps:
     args: {}
     outputs:
       all_posts: result
+
+  # Create follow relationships for a natural social network
+  # Diana follows Alice, Bob, Eve, Hannah
+  - name: Diana follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "5"
+      followee_id: "1"
+
+  - name: Diana follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "5"
+      followee_id: "2"
+
+  - name: Diana follows Eve
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "5"
+      followee_id: "6"
+
+  - name: Diana follows Hannah
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "5"
+      followee_id: "8"
+
+  # Eve follows Alice, Bob, Frank, Julia
+  - name: Eve follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "6"
+      followee_id: "1"
+
+  - name: Eve follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "6"
+      followee_id: "2"
+
+  - name: Eve follows Frank
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "6"
+      followee_id: "4"
+
+  - name: Eve follows Julia
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "6"
+      followee_id: "10"
+
+  # George follows Alice, Diana, Hannah, Nina
+  - name: George follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "7"
+      followee_id: "1"
+
+  - name: George follows Diana
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "7"
+      followee_id: "5"
+
+  - name: George follows Hannah
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "7"
+      followee_id: "8"
+
+  - name: George follows Nina
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "7"
+      followee_id: "14"
+
+  # Hannah follows Alice, Bob, Luna, Nina
+  - name: Hannah follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "8"
+      followee_id: "1"
+
+  - name: Hannah follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "8"
+      followee_id: "2"
+
+  - name: Hannah follows Luna
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "8"
+      followee_id: "12"
+
+  - name: Hannah follows Nina
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "8"
+      followee_id: "14"
+
+  # Ivan follows Bob, Frank, Kevin
+  - name: Ivan follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "9"
+      followee_id: "2"
+
+  - name: Ivan follows Frank
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "9"
+      followee_id: "4"
+
+  - name: Ivan follows Kevin
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "9"
+      followee_id: "11"
+
+  # Julia follows Alice, Eve, Luna, Nina
+  - name: Julia follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "10"
+      followee_id: "1"
+
+  - name: Julia follows Eve
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "10"
+      followee_id: "6"
+
+  - name: Julia follows Luna
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "10"
+      followee_id: "12"
+
+  - name: Julia follows Nina
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "10"
+      followee_id: "14"
+
+  # Kevin follows Frank, Mike, Ivan
+  - name: Kevin follows Frank
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "11"
+      followee_id: "4"
+
+  - name: Kevin follows Mike
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "11"
+      followee_id: "13"
+
+  - name: Kevin follows Ivan
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "11"
+      followee_id: "9"
+
+  # Luna follows Alice, Diana, Hannah, Julia
+  - name: Luna follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "12"
+      followee_id: "1"
+
+  - name: Luna follows Diana
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "12"
+      followee_id: "5"
+
+  - name: Luna follows Hannah
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "12"
+      followee_id: "8"
+
+  - name: Luna follows Julia
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "12"
+      followee_id: "10"
+
+  # Mike follows Bob, Frank, Kevin
+  - name: Mike follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "13"
+      followee_id: "2"
+
+  - name: Mike follows Frank
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "13"
+      followee_id: "4"
+
+  - name: Mike follows Kevin
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "13"
+      followee_id: "11"
+
+  # Nina follows Alice, George, Hannah, Julia
+  - name: Nina follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "14"
+      followee_id: "1"
+
+  - name: Nina follows George
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "14"
+      followee_id: "7"
+
+  - name: Nina follows Hannah
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "14"
+      followee_id: "8"
+
+  - name: Nina follows Julia
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "14"
+      followee_id: "10"
+
+  # Charlie and Frank also follow some users
+  - name: Charlie follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "3"
+      followee_id: "1"
+
+  - name: Charlie follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "3"
+      followee_id: "2"
+
+  - name: Frank follows Alice
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "4"
+      followee_id: "1"
+
+  - name: Frank follows Bob
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "4"
+      followee_id: "2"
+
+  - name: Frank follows Eve
+    type: call
+    node: calimero-node-1
+    context_id: "{{context_id}}"
+    executor_public_key: "{{member_public_key}}"
+    method: follow_user
+    args:
+      follower_id: "4"
+      followee_id: "6"
 
 stop_all_nodes: false
 restart: true

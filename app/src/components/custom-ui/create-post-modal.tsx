@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   Dialog,
@@ -16,7 +16,8 @@ import { Textarea } from '../shadcn-ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../shadcn-ui/avatar';
 import { toast } from 'sonner';
 import { useGeneralContext } from '@/contexts/general-context';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Image as ImageIcon, X } from 'lucide-react';
+import { uploadImage } from '@/lib/upload-image';
 
 interface CreatePostModalProps {
   trigger?: React.ReactNode;
@@ -28,24 +29,82 @@ export function CreatePostModal({ trigger, getPosts }: CreatePostModalProps) {
   const [content, setContent] = useState<string>('');
   const [open, setOpen] = useState<boolean>(false);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle image selection
+  const handleImageSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast.error('Please select an image file');
+          return;
+        }
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          toast.error('Image size should be less than 5MB');
+          return;
+        }
+
+        setSelectedImage(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
+    },
+    [],
+  );
+
+  // Remove selected image
+  const handleRemoveImage = useCallback(() => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
   // Handles the creation of a new post
   const createPost = useCallback(async () => {
     if (!api || !currentUser || !content.trim()) {
-      toast.error('Please enter both author and content');
+      toast.error('Please enter some content');
       return;
     }
     try {
       setIsCreating(true);
+
+      let imageUrl: string | null = null;
+
+      // Upload image if selected
+      if (selectedImage) {
+        toast.info('Uploading image...');
+        try {
+          imageUrl = await uploadImage(selectedImage);
+        } catch (error) {
+          console.error('Image upload error:', error);
+          toast.error(
+            'Failed to upload image. Post will be created without it.',
+          );
+        }
+      }
+
       await api.createPost({
         author_id: currentUser.id,
         content: content.trim(),
+        image_url: imageUrl,
       });
       await getPosts();
       toast.success('Post created successfully!');
       setOpen(false);
       setTimeout(() => {
         setContent('');
+        handleRemoveImage();
       }, 300);
     } catch (error) {
       console.error('createPost error:', error);
@@ -55,7 +114,7 @@ export function CreatePostModal({ trigger, getPosts }: CreatePostModalProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [api, currentUser, content, getPosts]);
+  }, [api, currentUser, content, selectedImage, getPosts, handleRemoveImage]);
 
   // Handle Enter key to submit (Ctrl+Enter for multi-line)
   const handleKeyDown = useCallback(
@@ -115,6 +174,44 @@ export function CreatePostModal({ trigger, getPosts }: CreatePostModalProps) {
             <p className="text-xs text-white/40 text-right">
               {content.length}/{500}
             </p>
+          </div>
+
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+              id="image-upload"
+            />
+            {!imagePreview ? (
+              <label
+                htmlFor="image-upload"
+                className="flex items-center justify-center gap-2 py-3 px-4 border border-dashed border-white/20 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-colors"
+              >
+                <ImageIcon className="size-5 text-white/60" />
+                <span className="text-sm text-white/60">
+                  Add an image (optional)
+                </span>
+              </label>
+            ) : (
+              <div className="relative rounded-lg overflow-hidden border border-white/20">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full max-h-[300px] object-contain bg-black/20"
+                />
+                <button
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 size-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                  type="button"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
 

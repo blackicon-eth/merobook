@@ -23,6 +23,7 @@ export interface Post {
   likes: Like[];
   tips: Tip[];
   author_wallet_address: string | null;
+  image_url: string | null;
 }
 
 export interface Tip {
@@ -241,6 +242,18 @@ export class AbiClient {
   }
 
   /**
+   * search_users_by_name
+   */
+  public async searchUsersByName(params: { name_prefix: string }): Promise<User[]> {
+    const response = await this.app.execute(this.context, 'search_users_by_name', params);
+    if (response.success) {
+      return response.result as User[];
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
    * update_user
    */
   public async updateUser(params: { user_id: string; name: string; bio: string; wallet_address: string | null }): Promise<User> {
@@ -255,7 +268,7 @@ export class AbiClient {
   /**
    * create_post
    */
-  public async createPost(params: { author_id: string; content: string }): Promise<Post> {
+  public async createPost(params: { author_id: string; content: string; image_url: string | null }): Promise<Post> {
     const response = await this.app.execute(this.context, 'create_post', params);
     if (response.success) {
       return response.result as Post;

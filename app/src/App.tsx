@@ -3,6 +3,7 @@ import { Routes, Route, BrowserRouter, useLocation } from 'react-router-dom';
 import { CalimeroProvider, AppMode } from '@calimero-network/calimero-client';
 import HomePage from './pages/home';
 import FollowingsPage from './pages/followings';
+import SearchPage from './pages/search';
 import Authenticate from './pages/login/Authenticate';
 import RegisterPage from './pages/register';
 import { Navbar } from './components/custom-ui/navbar';
@@ -45,6 +46,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/search"
+            element={
+              <ProtectedRoute>
+                <SearchPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/profile"
             element={
               <ProtectedRoute>
@@ -68,7 +77,7 @@ function AppContent() {
 
 export default function App() {
   const [clientAppId] = useState<string>(
-    'BrCj5KY47rz5UMTpdxpsqZieUqGeWq8uEgaiW3suGgaL',
+    'GMsHMa5yeQVkNUFaiLdAKuqByMGFxKdyMQkzg2DBatef',
   );
 
   return (

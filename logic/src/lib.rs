@@ -53,6 +53,8 @@ pub struct Post {
     pub tips: Vec<Tip>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author_wallet_address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image_url: Option<String>,
 }
 
 #[app::state(emits = for<'a> Event<'a>)]
@@ -224,6 +226,24 @@ impl SocialNetwork {
         Ok(users)
     }
 
+    pub fn search_users_by_name(&self, name_prefix: String) -> app::Result<Vec<User>> {
+        app::log!("Searching users with name prefix: {:?}", name_prefix);
+
+        if name_prefix.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let prefix_lower = name_prefix.to_lowercase();
+        let users: Vec<User> = self
+            .users
+            .entries()?
+            .filter(|(_, user)| user.name.to_lowercase().starts_with(&prefix_lower))
+            .map(|(_, user)| user)
+            .collect();
+
+        Ok(users)
+    }
+
     pub fn update_user(
         &mut self,
         user_id: String,
@@ -273,7 +293,12 @@ impl SocialNetwork {
         Ok(user)
     }
 
-    pub fn create_post(&mut self, author_id: String, content: String) -> app::Result<Post> {
+    pub fn create_post(
+        &mut self,
+        author_id: String,
+        content: String,
+        image_url: Option<String>,
+    ) -> app::Result<Post> {
         app::log!(
             "Creating post by user: {:?} with content: {:?}",
             author_id,
@@ -299,6 +324,7 @@ impl SocialNetwork {
             likes: Vec::new(),
             tips: Vec::new(),
             author_wallet_address: author.wallet_address.clone(),
+            image_url,
         };
 
         app::emit!(Event::PostCreated {

@@ -14,6 +14,7 @@ import { useAccount } from 'wagmi';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { TipModal } from './tip-modal';
 import { TipsListModal } from './tips-list-modal';
+import { ImageModal } from './image-modal';
 
 interface PostCardProps {
   post: Post;
@@ -135,6 +136,25 @@ export function PostCard({ post, getPosts }: PostCardProps) {
           </div>
 
           <p className="text-foreground leading-relaxed">{post.content}</p>
+
+          {/* Image */}
+          {post.image_url && (
+            <div className="mt-3">
+              <ImageModal
+                imageUrl={post.image_url}
+                alt={`Image from ${post.author_name}'s post`}
+                trigger={
+                  <div className="relative w-fit rounded-lg overflow-hidden border border-border cursor-pointer hover:opacity-90 transition-opacity">
+                    <img
+                      src={post.image_url}
+                      alt={`Post by ${post.author_name}`}
+                      className="w-fit max-h-[200px] object-cover"
+                    />
+                  </div>
+                }
+              />
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
