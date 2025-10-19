@@ -127,11 +127,11 @@ yarn app:dev
 - [Repository](https://github.com/blackicon-eth/merobook)
 - [Video Demo](https://youtu.be/8sRVwrL4sHo)
 - [Calimero Documentation](https://docs.calimero.network/)
-- [ENS Documentation](https://docs.ens.domains/)
+- [ENS Documentation](https://docs.ens.domains/web/quickstart/)
 
 ## Contact
 
-Built by [blackicon.eth](https://t.me/blackicon_eth)
+Built by [blackicon.eth](https://www.x.com/TBlackicon)
 
 ## License
 
