@@ -65,6 +65,10 @@ pub struct SocialNetwork {
     user_counter: u64,
     // Maps public key to user ID
     public_key_to_user_id: UnorderedMap<String, String>,
+    // Followers: key is user_id, value is list of user_ids who follow them
+    followers: UnorderedMap<String, Vec<String>>,
+    // Following: key is user_id, value is list of user_ids they follow
+    following: UnorderedMap<String, Vec<String>>,
 }
 
 #[app::event]
@@ -104,6 +108,14 @@ pub enum Event<'a> {
         amount_usdc: &'a str,
         tx_hash: &'a str,
     },
+    UserFollowed {
+        follower_id: &'a str,
+        followee_id: &'a str,
+    },
+    UserUnfollowed {
+        follower_id: &'a str,
+        followee_id: &'a str,
+    },
 }
 
 #[derive(Debug, Error, Serialize)]
@@ -126,6 +138,8 @@ impl SocialNetwork {
             post_counter: 0,
             user_counter: 0,
             public_key_to_user_id: UnorderedMap::new(),
+            followers: UnorderedMap::new(),
+            following: UnorderedMap::new(),
         }
     }
 
@@ -465,5 +479,137 @@ impl SocialNetwork {
         app::log!("Getting total post count");
 
         Ok(self.post_counter)
+    }
+
+    // Follow a user
+    pub fn follow_user(&mut self, follower_id: String, followee_id: String) -> app::Result<()> {
+        app::log!(
+            "User {:?} following user {:?}",
+            follower_id,
+            followee_id
+        );
+
+        // Validate both users exist
+        if self.users.get(&follower_id)?.is_none() {
+            app::bail!(Error::UserNotFound(&follower_id));
+        }
+        if self.users.get(&followee_id)?.is_none() {
+            app::bail!(Error::UserNotFound(&followee_id));
+        }
+
+        // Can't follow yourself
+        if follower_id == followee_id {
+            app::bail!(Error::UserNotFound("Cannot follow yourself"));
+        }
+
+        // Get or create followers list for followee
+        let mut followers_list = self.followers.get(&followee_id)?.unwrap_or_default();
+        
+        // Check if already following
+        if followers_list.contains(&follower_id) {
+            app::bail!(Error::UserNotFound("Already following this user"));
+        }
+
+        followers_list.push(follower_id.clone());
+        self.followers.insert(followee_id.clone(), followers_list)?;
+
+        // Get or create following list for follower
+        let mut following_list = self.following.get(&follower_id)?.unwrap_or_default();
+        following_list.push(followee_id.clone());
+        self.following.insert(follower_id.clone(), following_list)?;
+
+        app::emit!(Event::UserFollowed {
+            follower_id: &follower_id,
+            followee_id: &followee_id,
+        });
+
+        Ok(())
+    }
+
+    // Unfollow a user
+    pub fn unfollow_user(
+        &mut self,
+        follower_id: String,
+        followee_id: String,
+    ) -> app::Result<()> {
+        app::log!(
+            "User {:?} unfollowing user {:?}",
+            follower_id,
+            followee_id
+        );
+
+        // Remove from followee's followers list
+        if let Some(mut followers_list) = self.followers.get(&followee_id)? {
+            followers_list.retain(|id| id != &follower_id);
+            self.followers.insert(followee_id.clone(), followers_list)?;
+        }
+
+        // Remove from follower's following list
+        if let Some(mut following_list) = self.following.get(&follower_id)? {
+            following_list.retain(|id| id != &followee_id);
+            self.following.insert(follower_id.clone(), following_list)?;
+        }
+
+        app::emit!(Event::UserUnfollowed {
+            follower_id: &follower_id,
+            followee_id: &followee_id,
+        });
+
+        Ok(())
+    }
+
+    // Check if follower_id is following followee_id
+    pub fn is_following(&self, follower_id: String, followee_id: String) -> app::Result<bool> {
+        app::log!(
+            "Checking if user {:?} is following user {:?}",
+            follower_id,
+            followee_id
+        );
+
+        if let Some(following_list) = self.following.get(&follower_id)? {
+            Ok(following_list.contains(&followee_id))
+        } else {
+            Ok(false)
+        }
+    }
+
+    // Get followers of a user
+    pub fn get_followers(&self, user_id: String) -> app::Result<Vec<String>> {
+        app::log!("Getting followers for user {:?}", user_id);
+
+        Ok(self.followers.get(&user_id)?.unwrap_or_default())
+    }
+
+    // Get users that a user is following
+    pub fn get_following(&self, user_id: String) -> app::Result<Vec<String>> {
+        app::log!("Getting following for user {:?}", user_id);
+
+        Ok(self.following.get(&user_id)?.unwrap_or_default())
+    }
+
+    // Get follower count
+    pub fn get_follower_count(&self, user_id: String) -> app::Result<u64> {
+        app::log!("Getting follower count for user {:?}", user_id);
+
+        let count = self
+            .followers
+            .get(&user_id)?
+            .map(|list| list.len() as u64)
+            .unwrap_or(0);
+
+        Ok(count)
+    }
+
+    // Get following count
+    pub fn get_following_count(&self, user_id: String) -> app::Result<u64> {
+        app::log!("Getting following count for user {:?}", user_id);
+
+        let count = self
+            .following
+            .get(&user_id)?
+            .map(|list| list.len() as u64)
+            .unwrap_or(0);
+
+        Ok(count)
     }
 }

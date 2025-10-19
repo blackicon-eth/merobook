@@ -10,6 +10,8 @@ import { Loader2, Calendar, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/shadcn-ui/button';
 import { UserStats } from '@/components/custom-ui/user-stats';
 import { AddressBanner } from '@/components/custom-ui/address-banner';
+import { toast } from 'sonner';
+import { FollowButton } from '@/components/custom-ui/follow-button';
 
 export default function UserProfilePage() {
   const navigate = useNavigate();
@@ -20,6 +22,12 @@ export default function UserProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
+  const [followerIds, setFollowerIds] = useState<string[]>([]);
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
+  const [isTogglingFollow, setIsTogglingFollow] = useState<boolean>(false);
   const loadingPostsRef = useRef<boolean>(false);
 
   // Handles the navigation to the login page if the user is not authenticated
@@ -58,6 +66,72 @@ export default function UserProfilePage() {
     }
   }, [api]);
 
+  // Fetch follower/following data
+  const fetchFollowData = useCallback(async () => {
+    if (!api || !userId || !currentUser) return;
+    try {
+      // Check if current user is following this user
+      const following = await api.isFollowing({
+        follower_id: currentUser.id,
+        followee_id: userId,
+      });
+      setIsFollowing(following);
+
+      // Get follower and following counts
+      const followersCountData = await api.getFollowerCount({
+        user_id: userId,
+      });
+      const followingCountData = await api.getFollowingCount({
+        user_id: userId,
+      });
+
+      setFollowersCount(Number(followersCountData));
+      setFollowingCount(Number(followingCountData));
+
+      // Get follower and following IDs
+      const followersData = await api.getFollowers({ user_id: userId });
+      const followingData = await api.getFollowing({ user_id: userId });
+
+      setFollowerIds(followersData);
+      setFollowingIds(followingData);
+    } catch (error) {
+      console.error('fetchFollowData error:', error);
+    }
+  }, [api, userId, currentUser]);
+
+  // Toggle follow/unfollow
+  const handleToggleFollow = useCallback(async () => {
+    if (!api || !userId || !currentUser || isTogglingFollow) return;
+
+    setIsTogglingFollow(true);
+    try {
+      if (isFollowing) {
+        await api.unfollowUser({
+          follower_id: currentUser.id,
+          followee_id: userId,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsFollowing(false);
+        setFollowersCount((prev) => prev - 1);
+        toast.success('Unfollowed successfully');
+      } else {
+        await api.followUser({
+          follower_id: currentUser.id,
+          followee_id: userId,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+        toast.success('Following!');
+      }
+    } catch (error) {
+      console.error('handleToggleFollow error:', error);
+      toast.error('Failed to update follow status');
+    } finally {
+      setIsTogglingFollow(false);
+    }
+  }, [api, userId, currentUser, isFollowing, isTogglingFollow]);
+
   // Filter posts by the viewed user
   useEffect(() => {
     if (user && posts.length > 0) {
@@ -73,6 +147,13 @@ export default function UserProfilePage() {
       getPosts();
     }
   }, [isAuthenticated, api, fetchUser, getPosts]);
+
+  // Fetch follow data when user or currentUser changes
+  useEffect(() => {
+    if (user && currentUser) {
+      fetchFollowData();
+    }
+  }, [user, currentUser, fetchFollowData]);
 
   // Calculate stats
   const totalLikes = userPosts.reduce(
@@ -141,21 +222,36 @@ export default function UserProfilePage() {
           className="mb-8"
         >
           <Card className="p-8 bg-card/50 backdrop-blur border-border relative">
+            {/* Follow/Unfollow Button */}
+            <FollowButton
+              isFollowing={isFollowing}
+              isTogglingFollow={isTogglingFollow}
+              handleToggleFollow={handleToggleFollow}
+            />
+
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
               {/* Avatar */}
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
-                <div className="relative size-32 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="relative flex flex-col items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
+                  <div className="relative size-32 rounded-full overflow-hidden border-4 border-primary/20">
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                {/* User ID */}
+                <div className="px-3 py-1 rounded-md bg-muted/30 border border-border">
+                  <p className="text-xs font-mono text-muted-foreground">
+                    ID: #{user.id}
+                  </p>
                 </div>
               </div>
 
               {/* User Info */}
-              <div className="relative flex-1 text-center md:text-left">
+              <div className="relative flex-1 text-center md:text-left h-full mt-4">
                 <div className="flex justify-start items-center gap-4 mb-2">
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                     {user.name}
@@ -171,7 +267,10 @@ export default function UserProfilePage() {
                 <UserStats
                   userPosts={userPosts.length}
                   totalLikes={totalLikes}
-                  userId={user.id}
+                  followersCount={followersCount}
+                  followingCount={followingCount}
+                  followerIds={followerIds}
+                  followingIds={followingIds}
                 />
               </div>
             </div>

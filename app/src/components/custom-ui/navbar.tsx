@@ -7,7 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../shadcn-ui/button';
 import { cn, formatWalletAddress } from '@/lib/utils';
 import { useGeneralContext } from '@/contexts/general-context';
-import { UserCircle, Home, User } from 'lucide-react';
+import { UserCircle, Home, User, Users } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +36,7 @@ export function Navbar() {
   // Navbar links
   const navLinks = [
     { href: '/home', label: 'Home', icon: Home },
+    { href: '/followings', label: 'Following', icon: Users },
     { href: '/profile', label: 'Profile', icon: User },
   ];
 

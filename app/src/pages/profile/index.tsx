@@ -19,6 +19,10 @@ export default function ProfilePage() {
   const { isAuthenticated } = useCalimero();
   const [posts, setPosts] = useState<Post[]>([]);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
+  const [followerIds, setFollowerIds] = useState<string[]>([]);
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
   const loadingPostsRef = useRef<boolean>(false);
 
   // Handles the navigation to the login page if the user is not authenticated
@@ -42,6 +46,31 @@ export default function ProfilePage() {
     }
   }, [api]);
 
+  // Fetch follower/following counts
+  const fetchFollowCounts = useCallback(async () => {
+    if (!api || !currentUser) return;
+    try {
+      const followersCountData = await api.getFollowerCount({
+        user_id: currentUser.id,
+      });
+      const followingCountData = await api.getFollowingCount({
+        user_id: currentUser.id,
+      });
+
+      setFollowersCount(Number(followersCountData));
+      setFollowingCount(Number(followingCountData));
+
+      // Get follower and following IDs
+      const followersData = await api.getFollowers({ user_id: currentUser.id });
+      const followingData = await api.getFollowing({ user_id: currentUser.id });
+
+      setFollowerIds(followersData);
+      setFollowingIds(followingData);
+    } catch (error) {
+      console.error('fetchFollowCounts error:', error);
+    }
+  }, [api, currentUser]);
+
   // Filter posts by current user
   useEffect(() => {
     if (currentUser && posts.length > 0) {
@@ -58,6 +87,13 @@ export default function ProfilePage() {
       getPosts();
     }
   }, [isAuthenticated, api, getPosts]);
+
+  // Fetch follow counts when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      fetchFollowCounts();
+    }
+  }, [currentUser, fetchFollowCounts]);
 
   // Calculate stats
   const totalLikes = userPosts.reduce(
@@ -130,19 +166,27 @@ export default function ProfilePage() {
 
             <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
               {/* Avatar */}
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
-                <div className="relative size-32 rounded-full overflow-hidden border-4 border-primary/20">
-                  <img
-                    src={currentUser.avatar}
-                    alt={currentUser.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="relative flex flex-col items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl" />
+                  <div className="relative size-32 rounded-full overflow-hidden border-4 border-primary/20">
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+                {/* User ID */}
+                <div className="px-3 py-1 rounded-md bg-muted/30 border border-border">
+                  <p className="text-xs font-mono text-muted-foreground">
+                    ID: #{currentUser.id}
+                  </p>
                 </div>
               </div>
 
               {/* User Info */}
-              <div className="relative flex-1 text-center md:text-left">
+              <div className="relative flex-1 text-left h-full mt-4">
                 <div className="flex justify-start items-center gap-4 mb-2">
                   <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                     {currentUser.name}
@@ -158,7 +202,10 @@ export default function ProfilePage() {
                 <UserStats
                   userPosts={userPosts.length}
                   totalLikes={totalLikes}
-                  userId={currentUser.id}
+                  followersCount={followersCount}
+                  followingCount={followingCount}
+                  followerIds={followerIds}
+                  followingIds={followingIds}
                 />
               </div>
             </div>
