@@ -29,7 +29,7 @@ ENS integration enhances the user experience by resolving wallet addresses to hu
 - **Image Support**: Upload images to posts via imgbb integration
 - **Profile Management**: Edit your profile information and view your statistics
 
-## Bounties
+## Sponsor bounties
 
 - **ENS**: Merobook implements ENS name resolution to improve the overall user experience. Throughout the application, Ethereum wallet addresses are automatically resolved to their corresponding ENS names, making profiles and transactions more human-readable and accessible. This creates a more familiar social media experience while maintaining blockchain transparency.
 
