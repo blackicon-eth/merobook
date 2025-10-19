@@ -135,7 +135,9 @@ export function PostCard({ post, getPosts }: PostCardProps) {
             </p>
           </div>
 
-          <p className="text-foreground leading-relaxed">{post.content}</p>
+          <p className="text-lg text-foreground leading-relaxed">
+            {post.content}
+          </p>
 
           {/* Image */}
           {post.image_url && (

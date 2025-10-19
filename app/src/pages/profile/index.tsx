@@ -124,7 +124,7 @@ export default function ProfilePage() {
 
   return (
     <div className="h-full p-10 overflow-y-auto">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
