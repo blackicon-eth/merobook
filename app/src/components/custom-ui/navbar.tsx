@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback } from 'react';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useCalimero } from '@calimero-network/calimero-client';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../shadcn-ui/button';
@@ -18,13 +18,19 @@ import {
 } from '../shadcn-ui/dropdown-menu';
 import { ConnectButton, useAccountModal } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+import { useUsdcBalance } from '@/hooks/use-usdc-balance';
 
 export function Navbar() {
   const navigate = useNavigate();
   const { logout } = useCalimero();
+
   const location = useLocation();
   const { currentUser, isLoadingUser } = useGeneralContext();
   const { address: connectedAddress } = useAccount();
+  const { balance: usdcBalance } = useUsdcBalance({
+    address: connectedAddress,
+    enabled: !!connectedAddress,
+  });
   const { openAccountModal } = useAccountModal();
 
   // Handles the logout of the user
@@ -101,6 +107,27 @@ export function Navbar() {
                   </div>
                 ) : currentUser ? (
                   <div className="flex items-center gap-3">
+                    <AnimatePresence mode="wait">
+                      {usdcBalance && (
+                        <motion.div
+                          key="usdc-balance"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center gap-2 rounded-full border border-primary/50 px-4 py-2"
+                        >
+                          <span className="text-sm font-medium text-foreground">
+                            ${usdcBalance?.formatted} USDC
+                          </span>
+                          <img
+                            src="/tokens/usdc-logo.svg"
+                            alt="USDC"
+                            className="size-5"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     <div className="size-10 rounded-full overflow-hidden bg-secondary border border-primary shrink-0">
                       <img
                         src={currentUser.avatar}
