@@ -10,6 +10,10 @@ import { Post } from '@/api/AbiClient';
 import { formatTimestamp } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useGeneralContext } from '@/contexts/general-context';
+import { useAccount } from 'wagmi';
+import { useConnectModal } from '@rainbow-me/rainbowkit';
+import { TipModal } from './tip-modal';
+import { TipsListModal } from './tips-list-modal';
 
 interface PostCardProps {
   post: Post;
@@ -20,10 +24,8 @@ export function PostCard({ post, getPosts }: PostCardProps) {
   const { currentUser, api } = useGeneralContext();
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleTip = () => {
-    toast.info('Tipping feature coming soon');
-  };
+  const { openConnectModal } = useConnectModal();
+  const { address } = useAccount();
 
   // Handles the deletion of a post
   const handleDelete = useCallback(
@@ -62,6 +64,17 @@ export function PostCard({ post, getPosts }: PostCardProps) {
 
   // Get names of users who liked this post
   const likeNames = post.likes.map((like) => like.user_name).join(', ');
+
+  // Calculate total tips amount
+  const totalTips = post.tips.reduce(
+    (sum, tip) => sum + parseFloat(tip.amount_usdc || '0'),
+    0,
+  );
+
+  // Get names of users who tipped this post
+  const tipNames = post.tips
+    .map((tip) => `${tip.user_name} ($${tip.amount_usdc})`)
+    .join(', ');
 
   // Handles the liking/unliking of a post
   const handleLike = useCallback(
@@ -181,19 +194,52 @@ export function PostCard({ post, getPosts }: PostCardProps) {
               </motion.div>
             ) : (
               post.author_wallet_address && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={handleTip}
-                    variant="secondary"
-                    className="flex items-center gap-2 ml-auto w-[70px] shrink-0"
+                <div className="flex justify-between items-center w-full">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <DollarSign className="size-4" />
-                    <span>Tip</span>
-                  </Button>
-                </motion.div>
+                    <TipModal
+                      postId={post.id}
+                      recipientAddress={post.author_wallet_address}
+                      recipientName={post.author_name}
+                      onTipSuccess={getPosts}
+                      trigger={
+                        <Button
+                          onClick={(e) => {
+                            if (!address && openConnectModal) {
+                              e.preventDefault();
+                              openConnectModal();
+                            }
+                          }}
+                          variant="secondary"
+                          className="flex items-center justify-start gap-2 w-[70px] shrink-0"
+                        >
+                          <DollarSign className="size-4" />
+                          <span>Tip</span>
+                        </Button>
+                      }
+                    />
+                  </motion.div>
+
+                  {/* Tips Display */}
+                  {totalTips > 0 && (
+                    <TipsListModal
+                      tips={post.tips}
+                      totalAmount={totalTips}
+                      trigger={
+                        <button
+                          title={tipNames || 'No tips yet'}
+                          className="flex h-[36px] items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-md cursor-pointer hover:bg-primary/20 transition-colors"
+                        >
+                          <span className="text-sm font-semibold text-foreground">
+                            Total Tips: ${totalTips.toFixed(2)}
+                          </span>
+                        </button>
+                      }
+                    />
+                  )}
+                </div>
               )
             )}
           </div>

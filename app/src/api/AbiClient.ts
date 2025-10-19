@@ -18,7 +18,16 @@ export interface Post {
   content: string;
   timestamp: number;
   likes: Like[];
+  tips: Tip[];
   author_wallet_address: string | null;
+}
+
+export interface Tip {
+  user_id: string;
+  user_name: string;
+  amount_usdc: string;
+  timestamp: number;
+  tx_hash: string;
 }
 
 export interface User {
@@ -35,7 +44,8 @@ export type AbiEvent =
   | { name: 'PostCreated' }
   | { name: 'PostLiked' }
   | { name: 'PostUnliked' }
-  | { name: 'PostDeleted' };
+  | { name: 'PostDeleted' }
+  | { name: 'TipSent' };
 
 /**
  * Utility class for handling byte conversions in Calimero
@@ -77,60 +87,6 @@ export class CalimeroBytes {
   static fromUint8Array(bytes: Uint8Array): CalimeroBytes {
     return new CalimeroBytes(bytes);
   }
-}
-
-/**
- * Convert CalimeroBytes instances to arrays for WASM compatibility
- */
-function convertCalimeroBytesForWasm(obj: any): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (obj instanceof CalimeroBytes) {
-    return obj.toArray();
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => convertCalimeroBytesForWasm(item));
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertCalimeroBytesForWasm(value);
-    }
-    return result;
-  }
-
-  return obj;
-}
-
-/**
- * Convert arrays back to CalimeroBytes instances from WASM responses
- */
-function convertWasmResultToCalimeroBytes(obj: any): any {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  if (Array.isArray(obj) && obj.every((item) => typeof item === 'number')) {
-    return new CalimeroBytes(obj);
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => convertWasmResultToCalimeroBytes(item));
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertWasmResultToCalimeroBytes(value);
-    }
-    return result;
-  }
-
-  return obj;
 }
 
 export class AbiClient {
@@ -367,6 +323,23 @@ export class AbiClient {
     );
     if (response.success) {
       return response.result as boolean;
+    } else {
+      throw new Error(response.error || 'Execution failed');
+    }
+  }
+
+  /**
+   * record_tip
+   */
+  public async recordTip(params: {
+    post_id: string;
+    user_id: string;
+    amount_usdc: string;
+    tx_hash: string;
+  }): Promise<Post> {
+    const response = await this.app.execute(this.context, 'record_tip', params);
+    if (response.success) {
+      return response.result as Post;
     } else {
       throw new Error(response.error || 'Execution failed');
     }

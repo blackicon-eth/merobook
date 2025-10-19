@@ -31,6 +31,17 @@ pub struct Like {
 #[derive(Debug, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
 #[borsh(crate = "calimero_sdk::borsh")]
 #[serde(crate = "calimero_sdk::serde")]
+pub struct Tip {
+    pub user_id: String,
+    pub user_name: String,
+    pub amount_usdc: String, // Stored as string to preserve decimal precision
+    pub timestamp: u64,
+    pub tx_hash: String,
+}
+
+#[derive(Debug, BorshSerialize, BorshDeserialize, Serialize, Deserialize, Clone)]
+#[borsh(crate = "calimero_sdk::borsh")]
+#[serde(crate = "calimero_sdk::serde")]
 pub struct Post {
     pub id: String,
     pub author_id: String,
@@ -39,6 +50,7 @@ pub struct Post {
     pub content: String,
     pub timestamp: u64,
     pub likes: Vec<Like>,
+    pub tips: Vec<Tip>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author_wallet_address: Option<String>,
 }
@@ -66,13 +78,13 @@ pub enum Event<'a> {
         name: &'a str,
         bio: &'a str,
     },
-    PostCreated { 
-        id: &'a str, 
-        author_id: &'a str, 
+    PostCreated {
+        id: &'a str,
+        author_id: &'a str,
         content: &'a str,
         timestamp: u64,
     },
-    PostLiked { 
+    PostLiked {
         id: &'a str,
         user_id: &'a str,
         user_name: &'a str,
@@ -84,6 +96,13 @@ pub enum Event<'a> {
     PostDeleted {
         id: &'a str,
         author_id: &'a str,
+    },
+    TipSent {
+        post_id: &'a str,
+        tipper_id: &'a str,
+        tipper_name: &'a str,
+        amount_usdc: &'a str,
+        tx_hash: &'a str,
     },
 }
 
@@ -110,8 +129,19 @@ impl SocialNetwork {
         }
     }
 
-    pub fn create_user(&mut self, name: String, avatar: String, bio: String, public_key: String, wallet_address: Option<String>) -> app::Result<User> {
-        app::log!("Creating user: {:?} with public_key: {:?}", name, public_key);
+    pub fn create_user(
+        &mut self,
+        name: String,
+        avatar: String,
+        bio: String,
+        public_key: String,
+        wallet_address: Option<String>,
+    ) -> app::Result<User> {
+        app::log!(
+            "Creating user: {:?} with public_key: {:?}",
+            name,
+            public_key
+        );
 
         // Check if public key is already linked to a user
         if let Some(_) = self.public_key_to_user_id.get(&public_key)? {
@@ -180,8 +210,19 @@ impl SocialNetwork {
         Ok(users)
     }
 
-    pub fn update_user(&mut self, user_id: String, name: String, bio: String, wallet_address: Option<String>) -> app::Result<User> {
-        app::log!("Updating user {:?} with name: {:?}, bio: {:?}", user_id, name, bio);
+    pub fn update_user(
+        &mut self,
+        user_id: String,
+        name: String,
+        bio: String,
+        wallet_address: Option<String>,
+    ) -> app::Result<User> {
+        app::log!(
+            "Updating user {:?} with name: {:?}, bio: {:?}",
+            user_id,
+            name,
+            bio
+        );
 
         let Some(mut user) = self.users.get(&user_id)? else {
             app::bail!(Error::UserNotFound(&user_id));
@@ -201,12 +242,14 @@ impl SocialNetwork {
 
         // Update author_name in all posts by this user
         app::log!("Updating author_name in all posts by user {:?}", user_id);
-        
+
         // First collect all posts that need updating
-        let posts_to_update: Vec<(String, Post)> = self.posts.entries()?
+        let posts_to_update: Vec<(String, Post)> = self
+            .posts
+            .entries()?
             .filter(|(_, post)| post.author_id == user_id)
             .collect();
-        
+
         // Then update them
         for (post_id, mut post) in posts_to_update {
             post.author_name = name.clone();
@@ -217,7 +260,11 @@ impl SocialNetwork {
     }
 
     pub fn create_post(&mut self, author_id: String, content: String) -> app::Result<Post> {
-        app::log!("Creating post by user: {:?} with content: {:?}", author_id, content);
+        app::log!(
+            "Creating post by user: {:?} with content: {:?}",
+            author_id,
+            content
+        );
 
         // Get the user to populate post author fields
         let Some(author) = self.users.get(&author_id)? else {
@@ -236,6 +283,7 @@ impl SocialNetwork {
             content: content.clone(),
             timestamp,
             likes: Vec::new(),
+            tips: Vec::new(),
             author_wallet_address: author.wallet_address.clone(),
         };
 
@@ -255,7 +303,7 @@ impl SocialNetwork {
         app::log!("Getting all posts");
 
         let mut posts: Vec<Post> = self.posts.entries()?.map(|(_, post)| post).collect();
-        
+
         // Sort by timestamp, newest first
         posts.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
 
@@ -281,7 +329,11 @@ impl SocialNetwork {
 
         // Check if the user is the author of the post
         if post.author_id != user_id {
-            app::log!("User {:?} is not authorized to delete post {:?}", user_id, post_id);
+            app::log!(
+                "User {:?} is not authorized to delete post {:?}",
+                user_id,
+                post_id
+            );
             app::bail!(Error::UserNotFound("Not authorized to delete this post"));
         }
 
@@ -362,6 +414,51 @@ impl SocialNetwork {
         let has_liked = post.likes.iter().any(|like| like.user_id == user_id);
 
         Ok(has_liked)
+    }
+
+    pub fn record_tip(
+        &mut self,
+        post_id: String,
+        user_id: String,
+        amount_usdc: String,
+        tx_hash: String,
+    ) -> app::Result<Post> {
+        app::log!(
+            "User {:?} tipping post {:?} with {:?} USDC",
+            user_id,
+            post_id,
+            amount_usdc
+        );
+
+        let Some(mut post) = self.posts.get(&post_id)? else {
+            app::bail!(Error::PostNotFound(&post_id));
+        };
+
+        let Some(user) = self.users.get(&user_id)? else {
+            app::bail!(Error::UserNotFound(&user_id));
+        };
+
+        let tip = Tip {
+            user_id: user_id.clone(),
+            user_name: user.name.clone(),
+            amount_usdc: amount_usdc.clone(),
+            timestamp: env::time_now(),
+            tx_hash: tx_hash.clone(),
+        };
+
+        post.tips.push(tip);
+
+        app::emit!(Event::TipSent {
+            post_id: &post_id,
+            tipper_id: &user_id,
+            tipper_name: &user.name,
+            amount_usdc: &amount_usdc,
+            tx_hash: &tx_hash,
+        });
+
+        self.posts.insert(post_id, post.clone())?;
+
+        Ok(post)
     }
 
     pub fn get_post_count(&self) -> app::Result<u64> {
